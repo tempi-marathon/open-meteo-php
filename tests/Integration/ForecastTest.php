@@ -1,0 +1,107 @@
+<?php
+
+declare(strict_types=1);
+
+use OpenMeteo\Connectors\BaseConnector;
+use OpenMeteo\Connectors\ForecastConnector;
+use OpenMeteo\Data\ForecastResponse;
+use OpenMeteo\Data\ForecastUnits;
+use OpenMeteo\Enums\DailyVariable;
+use OpenMeteo\Enums\HourlyVariable;
+use OpenMeteo\Enums\Timezone;
+use OpenMeteo\Requests\Forecast\GetForecastRequest;
+use OpenMeteo\Resources\BaseResource;
+use OpenMeteo\Resources\ForecastResource;
+use OpenMeteo\Support\CreatesForecastResponse;
+use OpenMeteo\Support\OpenMeteoConfig;
+use Saloon\Http\Faking\MockClient;
+
+covers(
+    BaseConnector::class,
+    BaseResource::class,
+    ForecastConnector::class,
+    ForecastResource::class,
+    ForecastResponse::class,
+    ForecastUnits::class,
+    GetForecastRequest::class,
+    CreatesForecastResponse::class,
+);
+
+it('fetches a forecast', function (): void {
+    MockClient::global([
+        GetForecastRequest::class => mockOk(forecastPayload()),
+    ]);
+
+    $connector = new ForecastConnector;
+    $forecast = $connector->send(
+        $connector->weather()->get(52.37, 4.89)
+            ->hourly(HourlyVariable::Temperature2m, HourlyVariable::WeatherCode)
+            ->daily(DailyVariable::Temperature2mMax)
+            ->timezone(Timezone::EuropeAmsterdam)
+            ->forecastDays(7)
+            ->pastDays(1)
+            ->forecastHours(48),
+    )->dto();
+
+    expect($forecast->latitude)->toBe(52.37)
+        ->and($forecast->timezone)->toBe('Europe/Amsterdam')
+        ->and($forecast->hourlySlots()->count())->toBe(1)
+        ->and($forecast->units->hourly['temperature_2m'])->toBe('°C');
+});
+
+it('builds a debug url', function (): void {
+    $connector = new ForecastConnector;
+    $request = $connector->weather()->get(52.37, 4.89)->timezone(Timezone::GMT);
+
+    expect($connector->weather()->debugUrl($request))
+        ->toContain('forecast?')
+        ->toContain('latitude=52.37');
+});
+
+it('parses multi-location responses', function (): void {
+    MockClient::global([
+        GetForecastRequest::class => mockOk([
+            forecastPayload(),
+            array_replace(forecastPayload(), ['latitude' => 48.85, 'longitude' => 2.35]),
+        ]),
+    ]);
+
+    $connector = new ForecastConnector;
+    $request = $connector->weather()->get(52.37, 4.89);
+    $collection = $request->createDtoCollectionFromResponse($connector->send($request));
+
+    expect($collection->count())->toBe(2)
+        ->and($collection->first()?->latitude)->toBe(52.37);
+});
+
+it('validates forecast day ranges', function (): void {
+    $request = GetForecastRequest::forCoordinates(52.37, 4.89);
+
+    expect(fn () => $request->forecastDays(17))->toThrow(InvalidArgumentException::class)
+        ->and(fn () => $request->pastDays(93))->toThrow(InvalidArgumentException::class);
+});
+
+it('includes api key from config', function (): void {
+    OpenMeteoConfig::configure(['apikey' => 'secret-key']);
+
+    $request = GetForecastRequest::forCoordinates(52.37, 4.89);
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['apikey'])->toBe('secret-key');
+});
+
+it('includes api key from fluent builder', function (): void {
+    $request = GetForecastRequest::forCoordinates(52.37, 4.89)->apiKey('inline-key');
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['apikey'])->toBe('inline-key');
+});
+
+it('supports date ranges', function (): void {
+    $request = GetForecastRequest::forCoordinates(52.37, 4.89)
+        ->between(new DateTimeImmutable('2026-07-01'), new DateTimeImmutable('2026-07-07'));
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['start_date'])->toBe('2026-07-01')
+        ->and($query['end_date'])->toBe('2026-07-07');
+});

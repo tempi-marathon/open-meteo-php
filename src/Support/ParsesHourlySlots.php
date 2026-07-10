@@ -1,0 +1,52 @@
+<?php
+
+declare(strict_types=1);
+
+namespace OpenMeteo\Support;
+
+use DateTimeImmutable;
+use OpenMeteo\Data\HourlySlotCollection;
+use OpenMeteo\Data\HourlyWeatherSlot;
+use OpenMeteo\Enums\WeatherCode;
+
+use function Psl\Type\float;
+use function Psl\Type\int;
+use function Psl\Type\shape;
+use function Psl\Type\string;
+use function Psl\Type\vec;
+
+trait ParsesHourlySlots
+{
+    /**
+     * @param  array<string, list<int|float|string|null>>  $hourly
+     */
+    protected function createHourlySlotCollection(array $hourly): HourlySlotCollection
+    {
+        $coerced = shape([
+            'time' => vec(string()),
+            'temperature_2m' => vec(float()),
+            'apparent_temperature' => vec(float()),
+            'precipitation' => vec(float()),
+            'weathercode' => vec(int()),
+            'windspeed_10m' => vec(float()),
+            'winddirection_10m' => vec(int()),
+            'is_day' => vec(int()),
+        ])->coerce($hourly);
+
+        $slots = [];
+        foreach ($coerced['time'] as $index => $time) {
+            $slots[] = new HourlyWeatherSlot(
+                datetime: new DateTimeImmutable($time),
+                weatherCode: WeatherCode::from($coerced['weathercode'][$index]),
+                temperature2m: $coerced['temperature_2m'][$index],
+                apparentTemperature: $coerced['apparent_temperature'][$index],
+                windSpeed10m: $coerced['windspeed_10m'][$index],
+                windDirection10m: $coerced['winddirection_10m'][$index],
+                precipitation: $coerced['precipitation'][$index],
+                isDay: (bool) $coerced['is_day'][$index],
+            );
+        }
+
+        return new HourlySlotCollection($slots);
+    }
+}

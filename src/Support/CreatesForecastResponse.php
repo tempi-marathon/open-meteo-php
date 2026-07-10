@@ -1,0 +1,70 @@
+<?php
+
+declare(strict_types=1);
+
+namespace OpenMeteo\Support;
+
+use OpenMeteo\Data\ForecastResponse;
+use OpenMeteo\Data\ForecastResponseCollection;
+use OpenMeteo\Data\ForecastUnits;
+
+use function Psl\Type\float;
+use function Psl\Type\mixed_dict;
+use function Psl\Type\shape;
+use function Psl\Type\string;
+
+trait CreatesForecastResponse
+{
+    use ParsesHourlySlots;
+
+    /**
+     * @param  array<int|string, mixed>  $data
+     */
+    protected function createForecastResponseFromPayload(array $data): ForecastResponse
+    {
+        $root = shape([
+            'latitude' => float(),
+            'longitude' => float(),
+            'timezone' => string(),
+            'hourly' => mixed_dict(),
+            'daily' => mixed_dict(),
+            'hourly_units' => mixed_dict(),
+            'daily_units' => mixed_dict(),
+        ])->coerce($data);
+
+        /** @var array<string, list<int|float|string|null>> $hourly */
+        $hourly = $root['hourly'];
+        /** @var array<string, list<int|float|string|null>> $daily */
+        $daily = $root['daily'];
+        /** @var array<string, string> $hourlyUnits */
+        $hourlyUnits = $root['hourly_units'];
+        /** @var array<string, string> $dailyUnits */
+        $dailyUnits = $root['daily_units'];
+
+        return new ForecastResponse(
+            latitude: $root['latitude'],
+            longitude: $root['longitude'],
+            timezone: $root['timezone'],
+            hourly: $hourly,
+            daily: $daily,
+            units: new ForecastUnits(hourly: $hourlyUnits, daily: $dailyUnits),
+        );
+    }
+
+    /**
+     * @param  array<int|string, mixed>  $data
+     */
+    protected function createForecastResponseCollectionFromPayload(array $data): ForecastResponseCollection
+    {
+        if (isset($data[0]) && is_array($data[0])) {
+            /** @var list<array<string, mixed>> $segments */
+            $segments = array_values($data);
+
+            return new ForecastResponseCollection(
+                array_map(fn (array $segment): ForecastResponse => $this->createForecastResponseFromPayload($segment), $segments),
+            );
+        }
+
+        return new ForecastResponseCollection([$this->createForecastResponseFromPayload($data)]);
+    }
+}

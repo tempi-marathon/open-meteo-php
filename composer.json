@@ -1,0 +1,62 @@
+{
+  "name": "tempi-marathon/open-meteo-php",
+  "description": "Saloon SDK for the Open-Meteo APIs",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": "^8.5",
+    "php-standard-library/php-standard-library": "^6.2",
+    "saloonphp/saloon": "^4.0"
+  },
+  "require-dev": {
+    "infection/infection": "^0.31",
+    "laravel/pint": "^1.27",
+    "pestphp/pest": "^4.0",
+    "pestphp/pest-plugin-mutate": "^4.0",
+    "php-standard-library/phpstan-extension": "^2.1",
+    "phpstan/phpstan": "^2.0",
+    "phpstan/phpstan-strict-rules": "^2.0",
+    "phpunit/phpunit": "^12.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "OpenMeteo\\": "src/",
+      "OpenMeteo\\Laravel\\": "laravel/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "OpenMeteo\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "generate": [
+      "@php scripts/generate-hourly-daily-enums.php",
+      "@php scripts/generate-timezones.php",
+      "@php scripts/generate-country-codes.php"
+    ],
+    "test": [
+      "@test:style",
+      "@test:types",
+      "@test:unit"
+    ],
+    "test:style": "vendor/bin/pint --test",
+    "test:types": "vendor/bin/phpstan analyse --no-progress",
+    "test:unit": "vendor/bin/pest --coverage --min=100",
+    "test:infection": "vendor/bin/pest --mutate --min=90 --parallel"
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true,
+      "infection/extension-installer": true
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "OpenMeteo\\Laravel\\OpenMeteoServiceProvider"
+      ]
+    }
+  }
+}
