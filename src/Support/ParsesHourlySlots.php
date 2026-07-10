@@ -22,6 +22,8 @@ trait ParsesHourlySlots
      */
     protected function createHourlySlotCollection(array $hourly): HourlySlotCollection
     {
+        $hourly = $this->normalizeHourlyKeys($hourly);
+
         $coerced = shape([
             'time' => vec(string()),
             'temperature_2m' => vec(float()),
@@ -48,5 +50,26 @@ trait ParsesHourlySlots
         }
 
         return new HourlySlotCollection($slots);
+    }
+
+    /**
+     * @param  array<string, list<int|float|string|null>>  $hourly
+     * @return array<string, list<int|float|string|null>>
+     */
+    private function normalizeHourlyKeys(array $hourly): array
+    {
+        $aliases = [
+            'weather_code' => 'weathercode',
+            'wind_speed_10m' => 'windspeed_10m',
+            'wind_direction_10m' => 'winddirection_10m',
+        ];
+
+        foreach ($aliases as $from => $to) {
+            if (isset($hourly[$from]) && ! isset($hourly[$to])) {
+                $hourly[$to] = $hourly[$from];
+            }
+        }
+
+        return $hourly;
     }
 }

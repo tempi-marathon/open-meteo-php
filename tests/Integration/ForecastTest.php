@@ -49,6 +49,28 @@ it('fetches a forecast', function (): void {
         ->and($forecast->units->hourly['temperature_2m'])->toBe('°C');
 });
 
+it('normalizes modern hourly response keys', function (): void {
+    MockClient::global([
+        GetForecastRequest::class => mockOk(array_replace(forecastPayload(), [
+            'hourly' => [
+                'time' => ['2026-07-06T12:00'],
+                'temperature_2m' => [18.0],
+                'apparent_temperature' => [17.0],
+                'precipitation' => [0.0],
+                'weather_code' => [0],
+                'wind_speed_10m' => [5.5],
+                'wind_direction_10m' => [90],
+                'is_day' => [1],
+            ],
+        ])),
+    ]);
+
+    $connector = new ForecastConnector;
+    $forecast = $connector->send($connector->weather()->get(52.37, 4.89))->dto();
+
+    expect(iterator_to_array($forecast->hourlySlots())[0]->windSpeed10m)->toBe(5.5);
+});
+
 it('builds a debug url', function (): void {
     $connector = new ForecastConnector;
     $request = $connector->weather()->get(52.37, 4.89)->timezone(Timezone::GMT);
