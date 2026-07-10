@@ -4,28 +4,24 @@ declare(strict_types=1);
 
 namespace OpenMeteo\Laravel;
 
+use Illuminate\Support\ServiceProvider;
 use OpenMeteo\Support\OpenMeteoConfig;
 
-final class OpenMeteoServiceProvider
+final class OpenMeteoServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        if (! function_exists('config')) {
-            return;
-        }
-        /** @var array<string, mixed>|null $config */
-        $config = config('openmeteo');
-        if (is_array($config)) {
-            OpenMeteoConfig::configure($config);
-        }
+        $this->mergeConfigFrom(dirname(__DIR__).'/config/openmeteo.php', 'openmeteo');
+
+        /** @var array<string, mixed> $config */
+        $config = config('openmeteo', []);
+        OpenMeteoConfig::configure($config);
     }
 
     public function boot(): void
     {
-        if (! function_exists('base_path')) {
-            return;
-        }
-        $target = base_path('config/openmeteo.php');
+        $target = $this->app->configPath('openmeteo.php');
+
         if (! is_file($target)) {
             copy(dirname(__DIR__).'/config/openmeteo.php', $target);
         }

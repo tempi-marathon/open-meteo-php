@@ -5,11 +5,13 @@
   "license": "MIT",
   "require": {
     "php": "^8.5",
+    "illuminate/support": "^12.0|^13.0",
     "php-standard-library/php-standard-library": "^6.2",
     "saloonphp/saloon": "^4.0"
   },
   "require-dev": {
     "infection/infection": "^0.31",
+    "laravel/framework": "^13.0",
     "laravel/pint": "^1.27",
     "pestphp/pest": "^4.0",
     "pestphp/pest-plugin-mutate": "^4.0",

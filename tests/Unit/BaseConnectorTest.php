@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Support\ServiceProvider;
 use OpenMeteo\Connectors\BaseConnector;
 use OpenMeteo\Connectors\ForecastConnector;
 use OpenMeteo\Exceptions\OpenMeteoRequestException;
@@ -59,12 +60,8 @@ it('does not retry client errors', function (): void {
     }
 });
 
-it('skips laravel provider outside laravel', function (): void {
-    $provider = new OpenMeteoServiceProvider;
-    $provider->register();
-    $provider->boot();
-
-    expect(true)->toBeTrue();
+it('exposes a laravel service provider', function (): void {
+    expect(is_subclass_of(OpenMeteoServiceProvider::class, ServiceProvider::class))->toBeTrue();
 });
 
 it('handles retry callback for fatal errors', function (): void {
