@@ -6,7 +6,7 @@
 
 Framework-agnostic [Saloon](https://docs.saloon.dev/) SDK for the [Open-Meteo](https://open-meteo.com/) APIs.
 
-[Open-Meteo](https://open-meteo.com/) · [Open-Meteo GitHub](https://github.com/open-meteo/open-meteo) · [SDK on GitHub](https://github.com/tempi-marathon/open-meteo-php)
+[Open-Meteo](https://open-meteo.com/) · [Open-Meteo GitHub](https://github.com/open-meteo/open-meteo)
 
 **No API key required.** The free, non-commercial Open-Meteo API works out of the box — install the package and start making requests.
 
