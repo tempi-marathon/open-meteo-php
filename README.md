@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/tempi-marathon/open-meteo-php/actions/workflows/test.yml/badge.svg)](https://github.com/tempi-marathon/open-meteo-php/actions/workflows/test.yml)
 [![PHP](https://img.shields.io/static/v1?label=PHP&message=%5E8.5&color=777BB4&logo=php&logoColor=white)](https://www.php.net/)
-[![License: MIT](https://img.shields.io/github/license/tempi-marathon/open-meteo-php)](LICENSE)
+[![License: MIT](https://img.shields.io/static/v1?label=License&message=MIT&color=blue)](LICENSE)
 
 Framework-agnostic [Saloon](https://docs.saloon.dev/) SDK for the [Open-Meteo](https://open-meteo.com/) APIs.
 
