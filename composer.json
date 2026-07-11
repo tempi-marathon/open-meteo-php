@@ -10,7 +10,7 @@
     "saloonphp/saloon": "^4.0"
   },
   "require-dev": {
-    "infection/infection": "^0.31",
+    "infection/infection": "^0.31 || ^0.34",
     "laravel/framework": "^13.0",
     "laravel/pint": "^1.27",
     "pestphp/pest": "^4.0",
