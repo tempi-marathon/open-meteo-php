@@ -10,11 +10,17 @@ use Saloon\Http\Request;
 use Saloon\Http\Response;
 use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
 use TempiMarathon\OpenMeteo\Data\ForecastResponse;
+use TempiMarathon\OpenMeteo\Enums\AirQualityHourlyVariable;
 use TempiMarathon\OpenMeteo\Enums\Timezone;
 use TempiMarathon\OpenMeteo\Support\CreatesForecastResponse;
 use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
 use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
+use TempiMarathon\OpenMeteo\Support\ValidatesCoordinates;
+
+use function Psl\Str\join;
+use function Psl\Vec\map;
+use function Psl\Vec\values;
 
 final class GetAirQualityRequest extends Request implements ResolvesRequestUrlContract
 {
@@ -31,7 +37,7 @@ final class GetAirQualityRequest extends Request implements ResolvesRequestUrlCo
 
     private Timezone $timezone = Timezone::GMT;
 
-    /** @var list<string> */
+    /** @var list<AirQualityHourlyVariable> */
     private array $hourly = [];
 
     private function __construct(
@@ -41,6 +47,8 @@ final class GetAirQualityRequest extends Request implements ResolvesRequestUrlCo
 
     public static function forCoordinates(float $latitude, float $longitude): self
     {
+        ValidatesCoordinates::assert($latitude, $longitude);
+
         return new self($latitude, $longitude);
     }
 
@@ -59,10 +67,10 @@ final class GetAirQualityRequest extends Request implements ResolvesRequestUrlCo
         ]);
     }
 
-    public function hourly(string ...$variables): static
+    public function hourly(AirQualityHourlyVariable ...$variables): static
     {
         return clone ($this, [
-            'hourly' => array_values($variables),
+            'hourly' => values($variables),
         ]);
     }
 
@@ -88,7 +96,7 @@ final class GetAirQualityRequest extends Request implements ResolvesRequestUrlCo
         }
 
         if ($this->hourly !== []) {
-            $query['hourly'] = implode(',', $this->hourly);
+            $query['hourly'] = join(map($this->hourly, static fn (AirQualityHourlyVariable $variable): string => $variable->value), ',');
         }
 
         return $this->withApiKey($query);

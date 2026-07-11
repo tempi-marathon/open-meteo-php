@@ -8,7 +8,7 @@ trait HasApiKeyQuery
 {
     private ?string $apiKey = null;
 
-    public function apiKey(string $apiKey): static
+    public function apiKey(#[\SensitiveParameter] string $apiKey): static
     {
         return clone ($this, [
             'apiKey' => $apiKey,

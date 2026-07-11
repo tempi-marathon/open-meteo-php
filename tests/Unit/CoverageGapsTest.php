@@ -135,3 +135,16 @@ it('covers open meteo exception default message', function (): void {
 
     expect($exception->getMessage())->toBe('Open-Meteo request failed');
 });
+
+it('throws when multi-location forecast payload contains invalid segment', function (): void {
+    $connector = new ForecastConnector;
+    $request = $connector->weather()->get(52.37, 4.89);
+    $response = new Response(
+        new GuzzleHttp\Psr7\Response(200, [], json_encode([forecastPayload(), 'not-an-array'], JSON_THROW_ON_ERROR)),
+        new PendingRequest($connector, $request),
+        (new PendingRequest($connector, $request))->createPsrRequest(),
+    );
+
+    expect(fn () => $request->createDtoCollectionFromResponse($response))
+        ->toThrow(UnexpectedValueException::class, 'Expected forecast segment to be an array.');
+});

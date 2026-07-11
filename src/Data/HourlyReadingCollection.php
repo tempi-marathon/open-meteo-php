@@ -9,6 +9,7 @@ use DateTimeInterface;
 use IteratorAggregate;
 use Traversable;
 
+use function Psl\Iter\is_empty;
 use function Psl\Iter\reduce;
 use function Psl\Math\abs;
 
@@ -32,7 +33,7 @@ final readonly class HourlyReadingCollection implements Countable, IteratorAggre
 
     public function closestTo(DateTimeInterface $target): ?HourlyReading
     {
-        if ($this->readings === []) {
+        if (is_empty($this->readings)) {
             return null;
         }
 

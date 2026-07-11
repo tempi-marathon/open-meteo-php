@@ -12,6 +12,7 @@ use TempiMarathon\OpenMeteo\Data\ElevationResponse;
 use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
 use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
+use TempiMarathon\OpenMeteo\Support\ValidatesCoordinates;
 
 use function Psl\Type\float;
 use function Psl\Type\vec;
@@ -28,6 +29,8 @@ final class GetElevationRequest extends Request implements ResolvesRequestUrlCon
 
     public static function forCoordinates(float $latitude, float $longitude): self
     {
+        ValidatesCoordinates::assert($latitude, $longitude);
+
         return new self($latitude, $longitude);
     }
 

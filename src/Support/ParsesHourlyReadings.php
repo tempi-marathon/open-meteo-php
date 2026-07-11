@@ -14,6 +14,8 @@ use function Psl\Type\int;
 use function Psl\Type\shape;
 use function Psl\Type\string;
 use function Psl\Type\vec;
+use function Psl\Vec\enumerate;
+use function Psl\Vec\map;
 
 trait ParsesHourlyReadings
 {
@@ -35,19 +37,19 @@ trait ParsesHourlyReadings
             'is_day' => vec(int()),
         ])->coerce($hourly);
 
-        $readings = [];
-        foreach ($coerced['time'] as $index => $time) {
-            $readings[] = new HourlyReading(
-                datetime: new DateTimeImmutable($time),
-                weatherCode: WeatherCode::from($coerced['weathercode'][$index]),
-                temperature2m: $coerced['temperature_2m'][$index],
-                apparentTemperature: $coerced['apparent_temperature'][$index],
-                windSpeed10m: $coerced['windspeed_10m'][$index],
-                windDirection10m: $coerced['winddirection_10m'][$index],
-                precipitation: $coerced['precipitation'][$index],
-                isDay: (bool) $coerced['is_day'][$index],
-            );
-        }
+        $readings = map(
+            enumerate($coerced['time']),
+            static fn (array $entry): HourlyReading => new HourlyReading(
+                datetime: new DateTimeImmutable($entry[1]),
+                weatherCode: WeatherCode::from($coerced['weathercode'][$entry[0]]),
+                temperature2m: $coerced['temperature_2m'][$entry[0]],
+                apparentTemperature: $coerced['apparent_temperature'][$entry[0]],
+                windSpeed10m: $coerced['windspeed_10m'][$entry[0]],
+                windDirection10m: $coerced['winddirection_10m'][$entry[0]],
+                precipitation: $coerced['precipitation'][$entry[0]],
+                isDay: (bool) $coerced['is_day'][$entry[0]],
+            ),
+        );
 
         return new HourlyReadingCollection($readings);
     }

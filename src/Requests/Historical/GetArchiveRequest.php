@@ -17,6 +17,11 @@ use TempiMarathon\OpenMeteo\Support\CreatesForecastResponse;
 use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
 use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
+use TempiMarathon\OpenMeteo\Support\ValidatesCoordinates;
+
+use function Psl\Str\join;
+use function Psl\Vec\map;
+use function Psl\Vec\values;
 
 final class GetArchiveRequest extends Request implements ResolvesRequestUrlContract
 {
@@ -46,20 +51,22 @@ final class GetArchiveRequest extends Request implements ResolvesRequestUrlContr
 
     public static function forCoordinates(float $latitude, float $longitude): self
     {
+        ValidatesCoordinates::assert($latitude, $longitude);
+
         return new self($latitude, $longitude);
     }
 
     public function hourly(HourlyVariable ...$variables): static
     {
         return clone ($this, [
-            'hourly' => array_values($variables),
+            'hourly' => values($variables),
         ]);
     }
 
     public function daily(DailyVariable ...$variables): static
     {
         return clone ($this, [
-            'daily' => array_values($variables),
+            'daily' => values($variables),
         ]);
     }
 
@@ -100,11 +107,11 @@ final class GetArchiveRequest extends Request implements ResolvesRequestUrlContr
         }
 
         if ($this->hourly !== []) {
-            $query['hourly'] = implode(',', array_map(static fn (HourlyVariable $v): string => $v->value, $this->hourly));
+            $query['hourly'] = join(map($this->hourly, static fn (HourlyVariable $v): string => $v->value), ',');
         }
 
         if ($this->daily !== []) {
-            $query['daily'] = implode(',', array_map(static fn (DailyVariable $v): string => $v->value, $this->daily));
+            $query['daily'] = join(map($this->daily, static fn (DailyVariable $v): string => $v->value), ',');
         }
 
         return $this->withApiKey($query);

@@ -8,6 +8,7 @@ use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
+use TempiMarathon\OpenMeteo\Data\GeocodingLocation;
 use TempiMarathon\OpenMeteo\Data\GeocodingLocationCollection;
 use TempiMarathon\OpenMeteo\Enums\CountryCode;
 use TempiMarathon\OpenMeteo\Enums\Geocoding\GeocodingFormat;
@@ -16,6 +17,11 @@ use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
 use TempiMarathon\OpenMeteo\Support\ParsesGeocodingLocation;
 use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
+use TempiMarathon\OpenMeteo\Support\ValidatesGeocodingSearchName;
+
+use function Psl\Type\mixed_dict;
+use function Psl\Vec\filter;
+use function Psl\Vec\map;
 
 final class SearchRequest extends Request implements ResolvesRequestUrlContract
 {
@@ -40,7 +46,12 @@ final class SearchRequest extends Request implements ResolvesRequestUrlContract
 
     private ?int $count = null;
 
-    public function __construct(private readonly string $name) {}
+    private readonly string $name;
+
+    public function __construct(string $name)
+    {
+        $this->name = ValidatesGeocodingSearchName::normalize($name);
+    }
 
     public function language(GeocodingLanguage $language): static
     {
@@ -112,15 +123,11 @@ final class SearchRequest extends Request implements ResolvesRequestUrlContract
             return new GeocodingLocationCollection([]);
         }
 
-        $locations = [];
-        foreach ($results as $result) {
-            if (! is_array($result)) {
-                continue;
-            }
-
-            $locations[] = $this->parseGeocodingLocation($result);
-        }
-
-        return new GeocodingLocationCollection($locations);
+        return new GeocodingLocationCollection(
+            map(
+                filter($results, static fn (mixed $result): bool => is_array($result)),
+                fn (mixed $result): GeocodingLocation => $this->parseGeocodingLocation(mixed_dict()->coerce($result)),
+            ),
+        );
     }
 }

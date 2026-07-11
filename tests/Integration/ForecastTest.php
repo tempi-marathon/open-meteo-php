@@ -99,7 +99,8 @@ it('validates forecast day ranges', function (): void {
     $request = GetForecastRequest::forCoordinates(52.37, 4.89);
 
     expect(fn () => $request->forecastDays(17))->toThrow(InvalidArgumentException::class)
-        ->and(fn () => $request->pastDays(93))->toThrow(InvalidArgumentException::class);
+        ->and(fn () => $request->pastDays(93))->toThrow(InvalidArgumentException::class)
+        ->and(fn () => $request->forecastHours(385))->toThrow(InvalidArgumentException::class);
 });
 
 it('includes api key from config', function (): void {

@@ -7,6 +7,7 @@ namespace TempiMarathon\OpenMeteo\Resources;
 use Saloon\Http\Connector;
 use Saloon\Http\Request;
 use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl;
+use TempiMarathon\OpenMeteo\Support\RedactsUriSecrets;
 
 abstract class BaseResource
 {
@@ -23,6 +24,8 @@ abstract class BaseResource
             throw new \LogicException('Request must implement ResolvesRequestUrl to build a debug URL.');
         }
 
-        return (string) $this->connector->createPendingRequest($request)->createPsrRequest()->getUri();
+        $uri = (string) $this->connector->createPendingRequest($request)->createPsrRequest()->getUri();
+
+        return RedactsUriSecrets::redact($uri);
     }
 }

@@ -6,6 +6,7 @@ use Saloon\Http\Faking\MockClient;
 use TempiMarathon\OpenMeteo\Connectors\AirQualityConnector;
 use TempiMarathon\OpenMeteo\Data\ForecastResponse;
 use TempiMarathon\OpenMeteo\Data\ForecastUnits;
+use TempiMarathon\OpenMeteo\Enums\AirQualityHourlyVariable;
 use TempiMarathon\OpenMeteo\Enums\Timezone;
 use TempiMarathon\OpenMeteo\Requests\AirQuality\GetAirQualityRequest;
 use TempiMarathon\OpenMeteo\Resources\AirQualityResource;
@@ -16,6 +17,7 @@ covers(
     GetAirQualityRequest::class,
     ForecastResponse::class,
     ForecastUnits::class,
+    AirQualityHourlyVariable::class,
 );
 
 it('fetches air quality data', function (): void {
@@ -34,7 +36,7 @@ it('fetches air quality data', function (): void {
 
 it('includes custom hourly variables', function (): void {
     $request = GetAirQualityRequest::forCoordinates(52.37, 4.89)
-        ->hourly('european_aqi', 'birch_pollen');
+        ->hourly(AirQualityHourlyVariable::EuropeanAqi, AirQualityHourlyVariable::BirchPollen);
     $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
 
     expect($query['hourly'])->toBe('european_aqi,birch_pollen');

@@ -13,6 +13,7 @@ use TempiMarathon\OpenMeteo\Support\CreatesForecastResponse;
 use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
 use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
+use TempiMarathon\OpenMeteo\Support\ValidatesCoordinates;
 
 final class GetClimateRequest extends Request implements ResolvesRequestUrlContract
 {
@@ -30,6 +31,8 @@ final class GetClimateRequest extends Request implements ResolvesRequestUrlContr
 
     public static function forCoordinates(float $latitude, float $longitude): self
     {
+        ValidatesCoordinates::assert($latitude, $longitude);
+
         return new self($latitude, $longitude);
     }
 

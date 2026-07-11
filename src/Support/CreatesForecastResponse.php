@@ -12,6 +12,8 @@ use function Psl\Type\float;
 use function Psl\Type\mixed_dict;
 use function Psl\Type\shape;
 use function Psl\Type\string;
+use function Psl\Vec\map;
+use function Psl\Vec\values;
 
 trait CreatesForecastResponse
 {
@@ -57,11 +59,17 @@ trait CreatesForecastResponse
     protected function createForecastResponseCollectionFromPayload(array $data): ForecastResponseCollection
     {
         if (isset($data[0]) && is_array($data[0])) {
-            /** @var list<array<string, mixed>> $segments */
-            $segments = array_values($data);
-
             return new ForecastResponseCollection(
-                array_map(fn (array $segment): ForecastResponse => $this->createForecastResponseFromPayload($segment), $segments),
+                map(
+                    values($data),
+                    function (mixed $segment): ForecastResponse {
+                        if (! is_array($segment)) {
+                            throw new \UnexpectedValueException('Expected forecast segment to be an array.');
+                        }
+
+                        return $this->createForecastResponseFromPayload($segment);
+                    },
+                ),
             );
         }
 

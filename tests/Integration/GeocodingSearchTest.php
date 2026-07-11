@@ -70,6 +70,11 @@ it('validates count range', function (): void {
         ->toThrow(InvalidArgumentException::class);
 });
 
+it('validates search name', function (): void {
+    expect(fn () => (new GeocodingConnector)->locations()->search(''))
+        ->toThrow(InvalidArgumentException::class, 'name must not be empty');
+});
+
 it('throws open meteo request exception on api errors', function (): void {
     MockClient::global([
         SearchRequest::class => mockError('Invalid name'),
@@ -77,7 +82,7 @@ it('throws open meteo request exception on api errors', function (): void {
 
     $connector = new GeocodingConnector;
 
-    expect(fn () => $connector->locations()->search('')->send()->throw())
+    expect(fn () => $connector->locations()->search('!')->send()->throw())
         ->toThrow(OpenMeteoRequestException::class, 'Invalid name');
 });
 

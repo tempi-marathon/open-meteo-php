@@ -18,6 +18,11 @@ use TempiMarathon\OpenMeteo\Support\CreatesForecastResponse;
 use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
 use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
+use TempiMarathon\OpenMeteo\Support\ValidatesCoordinates;
+
+use function Psl\Str\join;
+use function Psl\Vec\map;
+use function Psl\Vec\values;
 
 final class GetForecastRequest extends Request implements ResolvesRequestUrlContract
 {
@@ -35,6 +40,10 @@ final class GetForecastRequest extends Request implements ResolvesRequestUrlCont
     private const int MIN_PAST_DAYS = 0;
 
     private const int MAX_PAST_DAYS = 92;
+
+    private const int MIN_FORECAST_HOURS = 0;
+
+    private const int MAX_FORECAST_HOURS = 384;
 
     /** @var list<HourlyVariable> */
     private array $hourly = [];
@@ -61,20 +70,22 @@ final class GetForecastRequest extends Request implements ResolvesRequestUrlCont
 
     public static function forCoordinates(float $latitude, float $longitude): self
     {
+        ValidatesCoordinates::assert($latitude, $longitude);
+
         return new self($latitude, $longitude);
     }
 
     public function hourly(HourlyVariable ...$variables): static
     {
         return clone ($this, [
-            'hourly' => array_values($variables),
+            'hourly' => values($variables),
         ]);
     }
 
     public function daily(DailyVariable ...$variables): static
     {
         return clone ($this, [
-            'daily' => array_values($variables),
+            'daily' => values($variables),
         ]);
     }
 
@@ -121,6 +132,12 @@ final class GetForecastRequest extends Request implements ResolvesRequestUrlCont
 
     public function forecastHours(int $forecastHours): static
     {
+        if ($forecastHours < self::MIN_FORECAST_HOURS || $forecastHours > self::MAX_FORECAST_HOURS) {
+            throw new \InvalidArgumentException(
+                sprintf('forecast_hours must be between %d and %d, %d given.', self::MIN_FORECAST_HOURS, self::MAX_FORECAST_HOURS, $forecastHours),
+            );
+        }
+
         return clone ($this, [
             'forecastHours' => $forecastHours,
         ]);
@@ -160,11 +177,11 @@ final class GetForecastRequest extends Request implements ResolvesRequestUrlCont
         }
 
         if ($this->hourly !== []) {
-            $query['hourly'] = implode(',', array_map(static fn (HourlyVariable $v): string => $v->value, $this->hourly));
+            $query['hourly'] = join(map($this->hourly, static fn (HourlyVariable $v): string => $v->value), ',');
         }
 
         if ($this->daily !== []) {
-            $query['daily'] = implode(',', array_map(static fn (DailyVariable $v): string => $v->value, $this->daily));
+            $query['daily'] = join(map($this->daily, static fn (DailyVariable $v): string => $v->value), ',');
         }
 
         return $this->withApiKey($query);
