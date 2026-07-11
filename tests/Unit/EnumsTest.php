@@ -28,7 +28,8 @@ it('covers geocoding format cases', function (): void {
 });
 
 it('covers time format cases', function (): void {
-    expect(TimeFormat::cases())->not->toBeEmpty();
+    expect(TimeFormat::Iso8601->value)->toBe('iso8601')
+        ->and(TimeFormat::Unixtime->value)->toBe('unixtime');
 });
 
 it('describes every weather code', function (WeatherCode $code): void {

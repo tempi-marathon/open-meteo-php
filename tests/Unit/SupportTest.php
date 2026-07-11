@@ -23,6 +23,7 @@ use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\ResolvesTypedDto;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
 use TempiMarathon\OpenMeteo\Tests\Support\InvalidResolvesRequestUrlUser;
+use TempiMarathon\OpenMeteo\Tests\Support\SlashEndpointRequest;
 
 covers(
     BaseResource::class,
@@ -104,6 +105,33 @@ it('returns null for empty reading collections', function (): void {
     expect((new HourlyReadingCollection([]))->closestTo(new DateTimeImmutable))->toBeNull();
 });
 
+it('prefers the first reading when distances are equal', function (): void {
+    $readings = new HourlyReadingCollection([
+        new HourlyReading(
+            datetime: new DateTimeImmutable('2026-07-06T10:00'),
+            weatherCode: WeatherCode::CLEAR,
+            temperature2m: 16.0,
+            apparentTemperature: null,
+            windSpeed10m: null,
+            windDirection10m: null,
+            precipitation: null,
+            isDay: null,
+        ),
+        new HourlyReading(
+            datetime: new DateTimeImmutable('2026-07-06T14:00'),
+            weatherCode: WeatherCode::RAIN,
+            temperature2m: 18.0,
+            apparentTemperature: null,
+            windSpeed10m: null,
+            windDirection10m: null,
+            precipitation: null,
+            isDay: null,
+        ),
+    ]);
+
+    expect($readings->closestTo(new DateTimeImmutable('2026-07-06T12:00'))?->weatherCode)->toBe(WeatherCode::CLEAR);
+});
+
 it('iterates forecast response collections', function (): void {
     MockClient::global([
         GetForecastRequest::class => mockOk(forecastPayload()),
@@ -149,7 +177,14 @@ it('resolves request urls from traits', function (): void {
     $connector = new ForecastConnector;
     $request = $connector->weather()->get(52.37, 4.89);
 
-    expect($request->resolveRequestUrl($connector))->toContain('https://api.open-meteo.com/v1/forecast');
+    expect($request->resolveRequestUrl($connector))->toBe('https://api.open-meteo.com/v1/forecast');
+});
+
+it('normalizes leading slashes in request endpoints', function (): void {
+    $connector = new ForecastConnector;
+    $request = new SlashEndpointRequest;
+
+    expect($request->resolveRequestUrl($connector))->toBe('https://api.open-meteo.com/v1/forecast');
 });
 
 it('throws when resolving request url on invalid object', function (): void {

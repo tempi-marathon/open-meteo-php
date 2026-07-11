@@ -25,8 +25,19 @@ it('gets a location by id', function (): void {
 
     expect($location->id)->toBe(2759794)
         ->and($location->name)->toBe('Amsterdam')
+        ->and($location->latitude)->toBe(52.37403)
+        ->and($location->longitude)->toBe(4.88969)
         ->and($location->timezone)->toBe(Timezone::EuropeAmsterdam)
-        ->and($location->countryCode)->toBe(CountryCode::NL);
+        ->and($location->countryCode)->toBe(CountryCode::NL)
+        ->and($location->country)->toBe('Netherlands')
+        ->and($location->admin1)->toBe('North Holland');
+});
+
+it('builds geocoding get query', function (): void {
+    $request = (new GeocodingConnector)->locations()->get(2759794);
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['id'])->toBe('2759794');
 });
 
 it('includes api key on get requests', function (): void {
