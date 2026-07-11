@@ -13,6 +13,20 @@ use function Psl\Str\starts_with;
 
 final class OpenMeteoConfig
 {
+    /** @var array<string, string> */
+    private const DEFAULT_HOSTS = [
+        'forecast' => 'https://api.open-meteo.com/v1/',
+        'historical' => 'https://archive-api.open-meteo.com/v1/',
+        'geocoding' => 'https://geocoding-api.open-meteo.com/v1/',
+        'air_quality' => 'https://air-quality-api.open-meteo.com/v1/',
+        'marine' => 'https://marine-api.open-meteo.com/v1/',
+        'climate' => 'https://climate-api.open-meteo.com/v1/',
+        'flood' => 'https://flood-api.open-meteo.com/v1/',
+        'ensemble' => 'https://ensemble-api.open-meteo.com/v1/',
+        'seasonal' => 'https://seasonal-api.open-meteo.com/v1/',
+        'elevation' => 'https://api.open-meteo.com/v1/',
+    ];
+
     /** @var array<string, mixed>|null */
     private static ?array $config = null;
 
@@ -34,11 +48,11 @@ final class OpenMeteoConfig
         $hosts = $config['hosts'] ?? [];
         $url = $hosts[$key] ?? $default;
 
-        if (self::$config !== null) {
-            return $url;
+        if (self::$config === null) {
+            $url = self::isAllowedHostUrl($url) ? $url : $default;
         }
 
-        return self::isAllowedHostUrl($url) ? $url : $default;
+        return self::resolveCommercialHost($url, $key);
     }
 
     public static function apiKey(): ?string
@@ -98,6 +112,47 @@ final class OpenMeteoConfig
         }
 
         return $resolved;
+    }
+
+    private static function resolveCommercialHost(string $url, string $key): string
+    {
+        if (self::apiKey() === null) {
+            return $url;
+        }
+
+        if (! self::isDefaultFreeTierHost($url, $key)) {
+            return $url;
+        }
+
+        return self::toCustomerHost($url);
+    }
+
+    private static function isDefaultFreeTierHost(string $url, string $key): bool
+    {
+        $default = self::DEFAULT_HOSTS[$key] ?? null;
+
+        return $default !== null && $url === $default;
+    }
+
+    private static function toCustomerHost(string $url): string
+    {
+        $parts = parse_url($url);
+        if ($parts === false || ! isset($parts['scheme'], $parts['host'])) {
+            return $url;
+        }
+
+        if (starts_with(lowercase($parts['host']), 'customer-')) {
+            return $url;
+        }
+
+        $scheme = $parts['scheme'].'://';
+        $host = 'customer-'.$parts['host'];
+        $port = isset($parts['port']) ? ':'.$parts['port'] : '';
+        $path = $parts['path'] ?? '';
+        $query = isset($parts['query']) ? '?'.$parts['query'] : '';
+        $fragment = isset($parts['fragment']) ? '#'.$parts['fragment'] : '';
+
+        return $scheme.$host.$port.$path.$query.$fragment;
     }
 
     private static function isAllowedHostUrl(string $url): bool
