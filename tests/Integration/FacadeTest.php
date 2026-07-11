@@ -3,9 +3,16 @@
 declare(strict_types=1);
 
 use Saloon\Http\Faking\MockClient;
+use TempiMarathon\OpenMeteo\Connectors\AirQualityConnector;
+use TempiMarathon\OpenMeteo\Connectors\ClimateConnector;
+use TempiMarathon\OpenMeteo\Connectors\ElevationConnector;
+use TempiMarathon\OpenMeteo\Connectors\EnsembleConnector;
+use TempiMarathon\OpenMeteo\Connectors\FloodConnector;
 use TempiMarathon\OpenMeteo\Connectors\ForecastConnector;
 use TempiMarathon\OpenMeteo\Connectors\GeocodingConnector;
 use TempiMarathon\OpenMeteo\Connectors\HistoricalConnector;
+use TempiMarathon\OpenMeteo\Connectors\MarineConnector;
+use TempiMarathon\OpenMeteo\Connectors\SeasonalConnector;
 use TempiMarathon\OpenMeteo\Enums\HourlyVariable;
 use TempiMarathon\OpenMeteo\OpenMeteo;
 use TempiMarathon\OpenMeteo\Requests\Forecast\GetForecastRequest;
@@ -45,17 +52,26 @@ it('reuses connector instances', function (): void {
     expect($client->forecast())->toBeInstanceOf(ForecastConnector::class)
         ->and($client->forecast())->toBe($client->forecast())
         ->and($client->historical())->toBeInstanceOf(HistoricalConnector::class)
-        ->and($client->geocoding())->toBeInstanceOf(GeocodingConnector::class);
+        ->and($client->historical())->toBe($client->historical())
+        ->and($client->geocoding())->toBeInstanceOf(GeocodingConnector::class)
+        ->and($client->geocoding())->toBe($client->geocoding());
 });
 
 it('exposes all connector accessors', function (): void {
     $client = new OpenMeteo;
 
-    expect($client->airQuality())->toBe($client->airQuality())
+    expect($client->airQuality())->toBeInstanceOf(AirQualityConnector::class)
+        ->and($client->airQuality())->toBe($client->airQuality())
+        ->and($client->climate())->toBeInstanceOf(ClimateConnector::class)
         ->and($client->climate())->toBe($client->climate())
+        ->and($client->elevation())->toBeInstanceOf(ElevationConnector::class)
         ->and($client->elevation())->toBe($client->elevation())
+        ->and($client->ensemble())->toBeInstanceOf(EnsembleConnector::class)
         ->and($client->ensemble())->toBe($client->ensemble())
+        ->and($client->flood())->toBeInstanceOf(FloodConnector::class)
         ->and($client->flood())->toBe($client->flood())
+        ->and($client->marine())->toBeInstanceOf(MarineConnector::class)
         ->and($client->marine())->toBe($client->marine())
+        ->and($client->seasonal())->toBeInstanceOf(SeasonalConnector::class)
         ->and($client->seasonal())->toBe($client->seasonal());
 });
