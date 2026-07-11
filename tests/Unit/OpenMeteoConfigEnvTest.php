@@ -102,3 +102,53 @@ it('leaves invalid and already customer urls unchanged when transforming', funct
         ->and($toCustomerHost('https://customer-api.open-meteo.com/v1/'))
         ->toBe('https://customer-api.open-meteo.com/v1/');
 });
+
+it('ignores empty configured api keys and user agents', function (): void {
+    OpenMeteoConfig::configure([
+        'apikey' => '',
+        'user_agent' => '',
+    ]);
+
+    expect(OpenMeteoConfig::apiKey())->toBeNull()
+        ->and(OpenMeteoConfig::userAgent())->toBeNull();
+
+    OpenMeteoConfig::reset();
+});
+
+it('preserves host url components when switching to customer endpoints', function (): void {
+    $toCustomerHost = (new ReflectionMethod(OpenMeteoConfig::class, 'toCustomerHost'))->getClosure();
+
+    expect($toCustomerHost('https://api.open-meteo.com:8443/v1/forecast?units=metric#section'))
+        ->toBe('https://customer-api.open-meteo.com:8443/v1/forecast?units=metric#section')
+        ->and($toCustomerHost('https://api.open-meteo.com'))
+        ->toBe('https://customer-api.open-meteo.com');
+});
+
+it('rejects invalid and insecure host urls from config resolution', function (): void {
+    $isAllowedHostUrl = (new ReflectionMethod(OpenMeteoConfig::class, 'isAllowedHostUrl'))->getClosure();
+
+    expect($isAllowedHostUrl('not-a-valid-url'))->toBeFalse()
+        ->and($isAllowedHostUrl('http://api.open-meteo.com/v1/'))->toBeFalse()
+        ->and($isAllowedHostUrl('https://127.0.0.1/v1/'))->toBeTrue();
+});
+
+it('falls back when configured path is blank', function (): void {
+    OpenMeteoConfig::reset();
+    putenv('OPENMETEO_CONFIG_PATH=   ');
+
+    expect(OpenMeteoConfig::apiKey())->toBeNull();
+
+    putenv('OPENMETEO_CONFIG_PATH');
+});
+
+it('does not load api keys from paths outside the package root', function (): void {
+    OpenMeteoConfig::reset();
+    $outside = sys_get_temp_dir().'/outside-open-meteo-config.php';
+    file_put_contents($outside, "<?php return ['apikey' => 'outside-key'];");
+    putenv('OPENMETEO_CONFIG_PATH='.$outside);
+
+    expect(OpenMeteoConfig::apiKey())->not->toBe('outside-key');
+
+    unlink($outside);
+    putenv('OPENMETEO_CONFIG_PATH');
+});

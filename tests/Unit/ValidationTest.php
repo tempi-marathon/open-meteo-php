@@ -18,18 +18,32 @@ covers(
 
 it('validates latitude range', function (): void {
     expect(fn () => ValidatesCoordinates::assert(91.0, 0.0))
+        ->toThrow(InvalidArgumentException::class, 'latitude must be between')
+        ->and(fn () => ValidatesCoordinates::assert(-91.0, 0.0))
         ->toThrow(InvalidArgumentException::class, 'latitude must be between');
 });
 
 it('validates longitude range', function (): void {
     expect(fn () => ValidatesCoordinates::assert(0.0, 181.0))
+        ->toThrow(InvalidArgumentException::class, 'longitude must be between')
+        ->and(fn () => ValidatesCoordinates::assert(0.0, -181.0))
         ->toThrow(InvalidArgumentException::class, 'longitude must be between');
 });
 
 it('accepts boundary coordinates', function (): void {
-    ValidatesCoordinates::assert(90.0, 180.0);
+    $request = GetForecastRequest::forCoordinates(90.0, 180.0);
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
 
-    expect(true)->toBeTrue();
+    expect($query['latitude'])->toBe('90')
+        ->and($query['longitude'])->toBe('180');
+});
+
+it('accepts minimum boundary coordinates', function (): void {
+    $request = GetForecastRequest::forCoordinates(-90.0, -180.0);
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['latitude'])->toBe('-90')
+        ->and($query['longitude'])->toBe('-180');
 });
 
 it('rejects empty geocoding search names', function (): void {
@@ -44,6 +58,10 @@ it('rejects overly long geocoding search names', function (): void {
 
 it('trims geocoding search names', function (): void {
     expect(ValidatesGeocodingSearchName::normalize('  Berlin  '))->toBe('Berlin');
+});
+
+it('rejects names at the maximum allowed length boundary', function (): void {
+    expect(ValidatesGeocodingSearchName::normalize(str_repeat('a', 256)))->toBe(str_repeat('a', 256));
 });
 
 it('validates forecast hour ranges', function (): void {

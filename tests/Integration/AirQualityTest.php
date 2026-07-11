@@ -43,3 +43,21 @@ it('includes custom hourly variables', function (): void {
 
     expect($query['hourly'])->toBe('european_aqi,birch_pollen');
 });
+
+it('builds air quality query with all options', function (): void {
+    $request = GetAirQualityRequest::forCoordinates(52.37, 4.89)
+        ->timezone(Timezone::EuropeAmsterdam)
+        ->between(new DateTimeImmutable('2026-07-01'), new DateTimeImmutable('2026-07-07'));
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['latitude'])->toBe('52.37')
+        ->and($query['longitude'])->toBe('4.89')
+        ->and($query['timezone'])->toBe('Europe/Amsterdam')
+        ->and($query['start_date'])->toBe('2026-07-01')
+        ->and($query['end_date'])->toBe('2026-07-07');
+});
+
+it('validates coordinates on air quality requests', function (): void {
+    expect(fn () => GetAirQualityRequest::forCoordinates(-91.0, 4.89))
+        ->toThrow(InvalidArgumentException::class, 'latitude must be between');
+});

@@ -90,6 +90,84 @@ it('handles retry callback for non-transient errors', function (): void {
     expect($connector->handleRetry($exception, $request))->toBeFalse();
 });
 
+it('handles retry callback for transient server errors', function (int $status): void {
+    $connector = new ForecastConnector;
+    $request = $connector->weather()->get(52.37, 4.89);
+    $pendingRequest = $connector->createPendingRequest($request);
+    $psrResponse = new Response($status);
+    $response = new Saloon\Http\Response(
+        $psrResponse,
+        $pendingRequest,
+        $pendingRequest->createPsrRequest(),
+    );
+    $exception = new RequestException($response, 'Transient');
+
+    expect($connector->handleRetry($exception, $request))->toBeTrue();
+})->with([408, 503, 500, 502, 504, 425]);
+
+it('returns open meteo exception without reason when error payload omits it', function (): void {
+    $connector = new ForecastConnector;
+    $request = $connector->weather()->get(52.37, 4.89);
+    $pendingRequest = $connector->createPendingRequest($request);
+    $psrResponse = new Response(400, [], json_encode(['error' => true], JSON_THROW_ON_ERROR));
+    $response = new Saloon\Http\Response(
+        $psrResponse,
+        $pendingRequest,
+        $pendingRequest->createPsrRequest(),
+    );
+
+    $exception = $connector->getRequestException($response, new Exception('sender'));
+
+    expect($exception)->toBeInstanceOf(OpenMeteoRequestException::class)
+        ->and($exception->reason())->toBeNull()
+        ->and($exception->statusCode())->toBe(400);
+});
+
+it('returns sender exception when error flag is false', function (): void {
+    $connector = new ForecastConnector;
+    $request = $connector->weather()->get(52.37, 4.89);
+    $pendingRequest = $connector->createPendingRequest($request);
+    $psrResponse = new Response(400, [], json_encode(['error' => false, 'reason' => 'ignored'], JSON_THROW_ON_ERROR));
+    $response = new Saloon\Http\Response(
+        $psrResponse,
+        $pendingRequest,
+        $pendingRequest->createPsrRequest(),
+    );
+    $senderException = new Exception('sender');
+
+    expect($connector->getRequestException($response, $senderException))->toBe($senderException);
+});
+
+it('returns sender exception when error flag is not boolean true', function (): void {
+    $connector = new ForecastConnector;
+    $request = $connector->weather()->get(52.37, 4.89);
+    $pendingRequest = $connector->createPendingRequest($request);
+    $psrResponse = new Response(400, [], json_encode(['error' => 1, 'reason' => 'ignored'], JSON_THROW_ON_ERROR));
+    $response = new Saloon\Http\Response(
+        $psrResponse,
+        $pendingRequest,
+        $pendingRequest->createPsrRequest(),
+    );
+    $senderException = new Exception('sender');
+
+    expect($connector->getRequestException($response, $senderException))->toBe($senderException);
+});
+
+it('returns sender exception for bad requests without an error flag', function (): void {
+    $connector = new ForecastConnector;
+    $request = $connector->weather()->get(52.37, 4.89);
+    $pendingRequest = $connector->createPendingRequest($request);
+    $psrResponse = new Response(400, [], json_encode(['reason' => 'Bad request'], JSON_THROW_ON_ERROR));
+    $response = new Saloon\Http\Response(
+        $psrResponse,
+        $pendingRequest,
+        $pendingRequest->createPsrRequest(),
+    );
+    $senderException = new Exception('sender');
+
+    expect($connector->getRequestException($response, $senderException))->toBe($senderException);
+});
+
 it('uses user agent header when configured', function (): void {
     OpenMeteoConfig::configure(['user_agent' => 'open-meteo-php']);
 

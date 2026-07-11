@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use Psl\Type\Exception\CoercionException;
 use Saloon\Http\Faking\MockClient;
+use Saloon\Http\PendingRequest;
+use Saloon\Http\Response;
 use TempiMarathon\OpenMeteo\Connectors\ClimateConnector;
 use TempiMarathon\OpenMeteo\Connectors\ElevationConnector;
 use TempiMarathon\OpenMeteo\Connectors\EnsembleConnector;
@@ -63,6 +66,9 @@ it('fetches marine data', function (): void {
 
     expect($response)->toBeInstanceOf(MarineResponse::class)
         ->and($response->latitude)->toBe(52.375008)
+        ->and($response->longitude)->toBe(4.8750153)
+        ->and($response->timezone)->toBe('Europe/Amsterdam')
+        ->and($response->units->hourlyUnits['wave_height'])->toBe('m')
         ->and($response->hourly)->toHaveKey('wave_height');
 });
 
@@ -73,6 +79,9 @@ it('fetches climate data', function (): void {
     $response = $connector->climate()->get(52.37, 4.89)->dto();
 
     expect($response)->toBeInstanceOf(ClimateResponse::class)
+        ->and($response->longitude)->toBe(4.900009)
+        ->and($response->timezone)->toBe('GMT')
+        ->and($response->units->dailyUnits['temperature_2m_max'])->toBe('°C')
         ->and($response->daily)->toHaveKey('temperature_2m_max');
 });
 
@@ -83,6 +92,9 @@ it('fetches flood data', function (): void {
     $response = $connector->flood()->get(52.37, 4.89)->dto();
 
     expect($response)->toBeInstanceOf(FloodResponse::class)
+        ->and($response->longitude)->toBe(4.8750153)
+        ->and($response->timezone)->toBe('GMT')
+        ->and($response->units->dailyUnits['river_discharge'])->toBe('m³/s')
         ->and($response->daily)->toHaveKey('river_discharge');
 });
 
@@ -93,6 +105,9 @@ it('fetches ensemble data', function (): void {
     $response = $connector->ensemble()->get(52.37, 4.89)->dto();
 
     expect($response)->toBeInstanceOf(EnsembleResponse::class)
+        ->and($response->longitude)->toBe(5.0)
+        ->and($response->timezone)->toBe('Europe/Amsterdam')
+        ->and($response->units->hourlyUnits['temperature_2m'])->toBe('°C')
         ->and($response->hourly)->toHaveKey('temperature_2m');
 });
 
@@ -103,6 +118,9 @@ it('fetches seasonal data', function (): void {
     $response = $connector->seasonal()->get(52.37, 4.89)->dto();
 
     expect($response)->toBeInstanceOf(SeasonalResponse::class)
+        ->and($response->longitude)->toBe(4.5652175)
+        ->and($response->timezone)->toBe('GMT')
+        ->and($response->units->dailyUnits['temperature_2m_max'])->toBe('°C')
         ->and($response->daily)->toHaveKey('temperature_2m_max');
 });
 
@@ -111,4 +129,38 @@ it('fetches elevation data', function (): void {
     $connector = new ElevationConnector;
 
     expect($connector->elevation()->get(52.37, 4.89)->dto()->elevation)->toBe([11.0]);
+});
+
+it('returns empty elevation when key is missing', function (): void {
+    MockClient::global([GetElevationRequest::class => mockOk([])]);
+    $connector = new ElevationConnector;
+
+    expect($connector->elevation()->get(52.37, 4.89)->dto()->elevation)->toBe([]);
+});
+
+it('throws when elevation values are malformed', function (): void {
+    MockClient::global([GetElevationRequest::class => mockOk(['elevation' => ['invalid']])]);
+    $connector = new ElevationConnector;
+    $request = $connector->elevation()->get(52.37, 4.89);
+    $response = new Response(
+        new GuzzleHttp\Psr7\Response(200, [], json_encode(['elevation' => ['invalid']], JSON_THROW_ON_ERROR)),
+        new PendingRequest($connector, $request),
+        (new PendingRequest($connector, $request))->createPsrRequest(),
+    );
+
+    expect(fn () => $request->createDtoFromResponse($response))
+        ->toThrow(CoercionException::class);
+});
+
+it('builds elevation query from coordinates', function (): void {
+    $request = GetElevationRequest::forCoordinates(52.37, 4.89);
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['latitude'])->toBe('52.37')
+        ->and($query['longitude'])->toBe('4.89');
+});
+
+it('validates coordinates on elevation requests', function (): void {
+    expect(fn () => GetElevationRequest::forCoordinates(0.0, 181.0))
+        ->toThrow(InvalidArgumentException::class, 'longitude must be between');
 });
