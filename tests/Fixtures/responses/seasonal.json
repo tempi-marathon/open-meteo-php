@@ -1,0 +1,218 @@
+{
+    "latitude": 52.412178,
+    "longitude": 4.5652175,
+    "generationtime_ms": 1.3210773468017578,
+    "utc_offset_seconds": 0,
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT",
+    "elevation": 11,
+    "daily_units": {
+        "time": "iso8601",
+        "temperature_2m_max": "\u00b0C",
+        "temperature_2m_max_member01": "\u00b0C",
+        "temperature_2m_max_member02": "\u00b0C",
+        "temperature_2m_max_member03": "\u00b0C",
+        "temperature_2m_max_member04": "\u00b0C",
+        "temperature_2m_max_member05": "\u00b0C",
+        "temperature_2m_max_member06": "\u00b0C",
+        "temperature_2m_max_member07": "\u00b0C",
+        "temperature_2m_max_member08": "\u00b0C",
+        "temperature_2m_max_member09": "\u00b0C",
+        "temperature_2m_max_member10": "\u00b0C",
+        "temperature_2m_max_member11": "\u00b0C",
+        "temperature_2m_max_member12": "\u00b0C",
+        "temperature_2m_max_member13": "\u00b0C",
+        "temperature_2m_max_member14": "\u00b0C",
+        "temperature_2m_max_member15": "\u00b0C",
+        "temperature_2m_max_member16": "\u00b0C",
+        "temperature_2m_max_member17": "\u00b0C",
+        "temperature_2m_max_member18": "\u00b0C",
+        "temperature_2m_max_member19": "\u00b0C",
+        "temperature_2m_max_member20": "\u00b0C",
+        "temperature_2m_max_member21": "\u00b0C",
+        "temperature_2m_max_member22": "\u00b0C",
+        "temperature_2m_max_member23": "\u00b0C",
+        "temperature_2m_max_member24": "\u00b0C",
+        "temperature_2m_max_member25": "\u00b0C",
+        "temperature_2m_max_member26": "\u00b0C",
+        "temperature_2m_max_member27": "\u00b0C",
+        "temperature_2m_max_member28": "\u00b0C",
+        "temperature_2m_max_member29": "\u00b0C",
+        "temperature_2m_max_member30": "\u00b0C",
+        "temperature_2m_max_member31": "\u00b0C",
+        "temperature_2m_max_member32": "\u00b0C",
+        "temperature_2m_max_member33": "\u00b0C",
+        "temperature_2m_max_member34": "\u00b0C",
+        "temperature_2m_max_member35": "\u00b0C",
+        "temperature_2m_max_member36": "\u00b0C",
+        "temperature_2m_max_member37": "\u00b0C",
+        "temperature_2m_max_member38": "\u00b0C",
+        "temperature_2m_max_member39": "\u00b0C",
+        "temperature_2m_max_member40": "\u00b0C",
+        "temperature_2m_max_member41": "\u00b0C",
+        "temperature_2m_max_member42": "\u00b0C",
+        "temperature_2m_max_member43": "\u00b0C",
+        "temperature_2m_max_member44": "\u00b0C",
+        "temperature_2m_max_member45": "\u00b0C",
+        "temperature_2m_max_member46": "\u00b0C",
+        "temperature_2m_max_member47": "\u00b0C",
+        "temperature_2m_max_member48": "\u00b0C",
+        "temperature_2m_max_member49": "\u00b0C",
+        "temperature_2m_max_member50": "\u00b0C"
+    },
+    "daily": {
+        "time": [
+            "2026-07-11"
+        ],
+        "temperature_2m_max": [
+            23.9
+        ],
+        "temperature_2m_max_member01": [
+            24.2
+        ],
+        "temperature_2m_max_member03": [
+            25.3
+        ],
+        "temperature_2m_max_member04": [
+            23.6
+        ],
+        "temperature_2m_max_member05": [
+            24.4
+        ],
+        "temperature_2m_max_member06": [
+            23.1
+        ],
+        "temperature_2m_max_member07": [
+            23.2
+        ],
+        "temperature_2m_max_member08": [
+            24.7
+        ],
+        "temperature_2m_max_member09": [
+            24.4
+        ],
+        "temperature_2m_max_member10": [
+            24.2
+        ],
+        "temperature_2m_max_member11": [
+            23.9
+        ],
+        "temperature_2m_max_member12": [
+            24.2
+        ],
+        "temperature_2m_max_member13": [
+            23.6
+        ],
+        "temperature_2m_max_member14": [
+            23.5
+        ],
+        "temperature_2m_max_member15": [
+            23.6
+        ],
+        "temperature_2m_max_member16": [
+            24.6
+        ],
+        "temperature_2m_max_member17": [
+            24.1
+        ],
+        "temperature_2m_max_member18": [
+            23.7
+        ],
+        "temperature_2m_max_member19": [
+            24.5
+        ],
+        "temperature_2m_max_member20": [
+            23.9
+        ],
+        "temperature_2m_max_member21": [
+            23.9
+        ],
+        "temperature_2m_max_member22": [
+            24
+        ],
+        "temperature_2m_max_member23": [
+            23.5
+        ],
+        "temperature_2m_max_member24": [
+            25
+        ],
+        "temperature_2m_max_member25": [
+            24.1
+        ],
+        "temperature_2m_max_member26": [
+            24.1
+        ],
+        "temperature_2m_max_member27": [
+            22.8
+        ],
+        "temperature_2m_max_member28": [
+            23.8
+        ],
+        "temperature_2m_max_member29": [
+            24.6
+        ],
+        "temperature_2m_max_member30": [
+            23.6
+        ],
+        "temperature_2m_max_member31": [
+            24.2
+        ],
+        "temperature_2m_max_member32": [
+            24
+        ],
+        "temperature_2m_max_member33": [
+            23.6
+        ],
+        "temperature_2m_max_member34": [
+            23.2
+        ],
+        "temperature_2m_max_member35": [
+            24.5
+        ],
+        "temperature_2m_max_member36": [
+            24.5
+        ],
+        "temperature_2m_max_member37": [
+            23.6
+        ],
+        "temperature_2m_max_member38": [
+            23.9
+        ],
+        "temperature_2m_max_member39": [
+            23.3
+        ],
+        "temperature_2m_max_member40": [
+            23.2
+        ],
+        "temperature_2m_max_member41": [
+            23.7
+        ],
+        "temperature_2m_max_member42": [
+            23.6
+        ],
+        "temperature_2m_max_member43": [
+            24.1
+        ],
+        "temperature_2m_max_member44": [
+            24.1
+        ],
+        "temperature_2m_max_member45": [
+            25.1
+        ],
+        "temperature_2m_max_member46": [
+            24.8
+        ],
+        "temperature_2m_max_member47": [
+            25.9
+        ],
+        "temperature_2m_max_member48": [
+            24.7
+        ],
+        "temperature_2m_max_member49": [
+            23.7
+        ],
+        "temperature_2m_max_member50": [
+            25.4
+        ]
+    }
+}

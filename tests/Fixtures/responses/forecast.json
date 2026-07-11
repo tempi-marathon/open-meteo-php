@@ -1,0 +1,57 @@
+{
+    "latitude": 52.366,
+    "longitude": 4.901,
+    "generationtime_ms": 0.2574920654296875,
+    "utc_offset_seconds": 7200,
+    "timezone": "Europe/Amsterdam",
+    "timezone_abbreviation": "GMT+2",
+    "elevation": 11,
+    "hourly_units": {
+        "time": "iso8601",
+        "temperature_2m": "\u00b0C",
+        "weathercode": "wmo code",
+        "windspeed_10m": "km/h",
+        "winddirection_10m": "\u00b0",
+        "apparent_temperature": "\u00b0C",
+        "precipitation": "mm",
+        "is_day": ""
+    },
+    "hourly": {
+        "time": [
+            "2026-07-11T00:00"
+        ],
+        "temperature_2m": [
+            21.2
+        ],
+        "weathercode": [
+            0
+        ],
+        "windspeed_10m": [
+            12.6
+        ],
+        "winddirection_10m": [
+            35
+        ],
+        "apparent_temperature": [
+            21.9
+        ],
+        "precipitation": [
+            0
+        ],
+        "is_day": [
+            0
+        ]
+    },
+    "daily_units": {
+        "time": "iso8601",
+        "temperature_2m_max": "\u00b0C"
+    },
+    "daily": {
+        "time": [
+            "2026-07-11"
+        ],
+        "temperature_2m_max": [
+            27.2
+        ]
+    }
+}

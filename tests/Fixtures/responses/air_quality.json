@@ -1,0 +1,25 @@
+{
+    "latitude": 52.4,
+    "longitude": 4.8999996,
+    "generationtime_ms": 0.3648996353149414,
+    "utc_offset_seconds": 7200,
+    "timezone": "Europe/Amsterdam",
+    "timezone_abbreviation": "GMT+2",
+    "elevation": 11,
+    "hourly_units": {
+        "time": "iso8601",
+        "european_aqi": "EAQI",
+        "pm2_5": "\u03bcg/m\u00b3"
+    },
+    "hourly": {
+        "time": [
+            "2026-07-11T00:00"
+        ],
+        "european_aqi": [
+            22
+        ],
+        "pm2_5": [
+            5.8
+        ]
+    }
+}

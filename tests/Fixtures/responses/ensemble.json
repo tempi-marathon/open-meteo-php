@@ -1,0 +1,141 @@
+{
+    "latitude": 52.25,
+    "longitude": 5,
+    "generationtime_ms": 0.29909610748291016,
+    "utc_offset_seconds": 7200,
+    "timezone": "Europe/Amsterdam",
+    "timezone_abbreviation": "GMT+2",
+    "elevation": 11,
+    "hourly_units": {
+        "time": "iso8601",
+        "temperature_2m": "\u00b0C",
+        "temperature_2m_member01": "\u00b0C",
+        "temperature_2m_member02": "\u00b0C",
+        "temperature_2m_member03": "\u00b0C",
+        "temperature_2m_member04": "\u00b0C",
+        "temperature_2m_member05": "\u00b0C",
+        "temperature_2m_member06": "\u00b0C",
+        "temperature_2m_member07": "\u00b0C",
+        "temperature_2m_member08": "\u00b0C",
+        "temperature_2m_member09": "\u00b0C",
+        "temperature_2m_member10": "\u00b0C",
+        "temperature_2m_member11": "\u00b0C",
+        "temperature_2m_member12": "\u00b0C",
+        "temperature_2m_member13": "\u00b0C",
+        "temperature_2m_member14": "\u00b0C",
+        "temperature_2m_member15": "\u00b0C",
+        "temperature_2m_member16": "\u00b0C",
+        "temperature_2m_member17": "\u00b0C",
+        "temperature_2m_member18": "\u00b0C",
+        "temperature_2m_member19": "\u00b0C",
+        "temperature_2m_member20": "\u00b0C",
+        "temperature_2m_member21": "\u00b0C",
+        "temperature_2m_member22": "\u00b0C",
+        "temperature_2m_member23": "\u00b0C",
+        "temperature_2m_member24": "\u00b0C",
+        "temperature_2m_member25": "\u00b0C",
+        "temperature_2m_member26": "\u00b0C",
+        "temperature_2m_member27": "\u00b0C",
+        "temperature_2m_member28": "\u00b0C",
+        "temperature_2m_member29": "\u00b0C",
+        "temperature_2m_member30": "\u00b0C"
+    },
+    "hourly": {
+        "time": [
+            "2026-07-11T00:00"
+        ],
+        "temperature_2m": [
+            18.9
+        ],
+        "temperature_2m_member01": [
+            19
+        ],
+        "temperature_2m_member02": [
+            18.9
+        ],
+        "temperature_2m_member03": [
+            18.8
+        ],
+        "temperature_2m_member04": [
+            18.9
+        ],
+        "temperature_2m_member05": [
+            18.8
+        ],
+        "temperature_2m_member06": [
+            18.9
+        ],
+        "temperature_2m_member07": [
+            19
+        ],
+        "temperature_2m_member08": [
+            18.5
+        ],
+        "temperature_2m_member09": [
+            18.7
+        ],
+        "temperature_2m_member10": [
+            18.7
+        ],
+        "temperature_2m_member11": [
+            18.7
+        ],
+        "temperature_2m_member12": [
+            19.3
+        ],
+        "temperature_2m_member13": [
+            18.8
+        ],
+        "temperature_2m_member14": [
+            18.8
+        ],
+        "temperature_2m_member15": [
+            18.6
+        ],
+        "temperature_2m_member16": [
+            18.9
+        ],
+        "temperature_2m_member17": [
+            19.1
+        ],
+        "temperature_2m_member18": [
+            19.3
+        ],
+        "temperature_2m_member19": [
+            19.3
+        ],
+        "temperature_2m_member20": [
+            19.1
+        ],
+        "temperature_2m_member21": [
+            18.9
+        ],
+        "temperature_2m_member22": [
+            18.8
+        ],
+        "temperature_2m_member23": [
+            18.8
+        ],
+        "temperature_2m_member24": [
+            18.7
+        ],
+        "temperature_2m_member25": [
+            18.7
+        ],
+        "temperature_2m_member26": [
+            18.7
+        ],
+        "temperature_2m_member27": [
+            18.7
+        ],
+        "temperature_2m_member28": [
+            18.7
+        ],
+        "temperature_2m_member29": [
+            18.8
+        ],
+        "temperature_2m_member30": [
+            19.1
+        ]
+    }
+}

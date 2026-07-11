@@ -1,0 +1,21 @@
+{
+    "latitude": 52.40001,
+    "longitude": 4.900009,
+    "generationtime_ms": 13.094186782836914,
+    "utc_offset_seconds": 0,
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT",
+    "elevation": 11,
+    "daily_units": {
+        "time": "iso8601",
+        "temperature_2m_max": "\u00b0C"
+    },
+    "daily": {
+        "time": [
+            "2020-01-01"
+        ],
+        "temperature_2m_max": [
+            11.1
+        ]
+    }
+}

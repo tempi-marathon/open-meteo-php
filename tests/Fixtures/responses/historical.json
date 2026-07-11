@@ -1,0 +1,21 @@
+{
+    "latitude": 52.40773,
+    "longitude": 4.842301,
+    "generationtime_ms": 2.421736717224121,
+    "utc_offset_seconds": 7200,
+    "timezone": "Europe/Amsterdam",
+    "timezone_abbreviation": "GMT+2",
+    "elevation": 11,
+    "hourly_units": {
+        "time": "iso8601",
+        "temperature_2m": "\u00b0C"
+    },
+    "hourly": {
+        "time": [
+            "2024-06-01T00:00"
+        ],
+        "temperature_2m": [
+            14.4
+        ]
+    }
+}
