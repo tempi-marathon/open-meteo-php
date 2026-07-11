@@ -5,11 +5,11 @@
   "license": "MIT",
   "require": {
     "php": "^8.5",
-    "illuminate/support": "^12.0|^13.0",
     "php-standard-library/php-standard-library": "^6.2",
     "saloonphp/saloon": "^4.0"
   },
   "require-dev": {
+    "illuminate/support": "^12.0|^13.0",
     "infection/infection": "^0.31 || ^0.34",
     "laravel/framework": "^13.0",
     "laravel/pint": "^1.27",
@@ -45,8 +45,11 @@
     ],
     "test:style": "vendor/bin/pint --test",
     "test:types": "vendor/bin/phpstan analyse --no-progress",
-    "test:unit": "vendor/bin/pest --coverage --min=100",
+    "test:unit": "vendor/bin/pest --coverage --min=100 --exclude-group=live",
     "test:infection": "vendor/bin/pest --mutate --min=90 --parallel"
+  },
+  "suggest": {
+    "illuminate/support": "Required for Laravel integration (^12.0|^13.0)"
   },
   "config": {
     "sort-packages": true,

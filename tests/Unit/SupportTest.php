@@ -11,6 +11,7 @@ use TempiMarathon\OpenMeteo\Data\ForecastResponseCollection;
 use TempiMarathon\OpenMeteo\Data\GeocodingLocationCollection;
 use TempiMarathon\OpenMeteo\Data\HourlyReading;
 use TempiMarathon\OpenMeteo\Data\HourlyReadingCollection;
+use TempiMarathon\OpenMeteo\Data\MarineResponse;
 use TempiMarathon\OpenMeteo\Enums\WeatherCode;
 use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoRequestException;
 use TempiMarathon\OpenMeteo\Requests\Forecast\GetForecastRequest;
@@ -19,6 +20,7 @@ use TempiMarathon\OpenMeteo\Resources\BaseResource;
 use TempiMarathon\OpenMeteo\Resources\ForecastResource;
 use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
+use TempiMarathon\OpenMeteo\Support\ResolvesTypedDto;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
 use TempiMarathon\OpenMeteo\Tests\Support\InvalidResolvesRequestUrlUser;
 
@@ -35,6 +37,7 @@ covers(
     SearchRequest::class,
     ResolvesRequestUrl::class,
     SendsThroughConnector::class,
+    ResolvesTypedDto::class,
 );
 
 it('configures custom hosts and headers', function (): void {
@@ -112,7 +115,7 @@ it('iterates forecast response collections', function (): void {
 
     expect($collection)->toBeInstanceOf(ForecastResponseCollection::class)
         ->and($collection->count())->toBe(1)
-        ->and($collection->first()?->latitude)->toBe(52.37);
+        ->and($collection->first()?->latitude)->toBe(52.366);
 });
 
 it('iterates geocoding location collections', function (): void {
@@ -160,6 +163,19 @@ it('requires a connector before sending', function (): void {
         ->toThrow(LogicException::class, 'No connector set');
 });
 
+it('throws when typed dto resolution receives the wrong response type', function (): void {
+    MockClient::global([
+        GetForecastRequest::class => mockOk(forecastPayload()),
+    ]);
+
+    $request = GetForecastRequest::forCoordinates(52.37, 4.89)->using(new ForecastConnector);
+    $method = new ReflectionMethod(GetForecastRequest::class, 'resolveDto');
+    $method->setAccessible(true);
+
+    expect(fn () => $method->invoke($request, MarineResponse::class))
+        ->toThrow(LogicException::class, 'Expected TempiMarathon\OpenMeteo\Data\MarineResponse DTO.');
+});
+
 it('allows attaching a connector with using', function (): void {
     MockClient::global([
         GetForecastRequest::class => mockOk(forecastPayload()),
@@ -170,5 +186,5 @@ it('allows attaching a connector with using', function (): void {
         ->using($connector)
         ->dto();
 
-    expect($forecast->latitude)->toBe(52.37);
+    expect($forecast->latitude)->toBe(52.366);
 });

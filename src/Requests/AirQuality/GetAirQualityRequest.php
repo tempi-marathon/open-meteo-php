@@ -9,10 +9,10 @@ use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
-use TempiMarathon\OpenMeteo\Data\ForecastResponse;
+use TempiMarathon\OpenMeteo\Data\AirQualityResponse;
 use TempiMarathon\OpenMeteo\Enums\AirQualityHourlyVariable;
 use TempiMarathon\OpenMeteo\Enums\Timezone;
-use TempiMarathon\OpenMeteo\Support\CreatesForecastResponse;
+use TempiMarathon\OpenMeteo\Support\CreatesTimeSeriesResponse;
 use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
 use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
@@ -24,7 +24,7 @@ use function Psl\Vec\values;
 
 final class GetAirQualityRequest extends Request implements ResolvesRequestUrlContract
 {
-    use CreatesForecastResponse;
+    use CreatesTimeSeriesResponse;
     use HasApiKeyQuery;
     use ResolvesRequestUrl;
     use SendsThroughConnector;
@@ -102,11 +102,16 @@ final class GetAirQualityRequest extends Request implements ResolvesRequestUrlCo
         return $this->withApiKey($query);
     }
 
-    public function createDtoFromResponse(Response $response): ForecastResponse
+    public function createDtoFromResponse(Response $response): AirQualityResponse
     {
         /** @var array<string, mixed> $data */
         $data = $response->json();
 
-        return $this->createForecastResponseFromPayload($data);
+        return $this->createTimeSeriesResponseFromPayload($data, AirQualityResponse::class);
+    }
+
+    public function dto(): AirQualityResponse
+    {
+        return $this->resolveDto(AirQualityResponse::class);
     }
 }

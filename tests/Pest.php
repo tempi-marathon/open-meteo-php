@@ -12,26 +12,71 @@ uses()->beforeEach(function (): void {
 })->in(__DIR__);
 
 /** @return array<string, mixed> */
+function fixturePayload(string $name): array
+{
+    $path = __DIR__.'/Fixtures/responses/'.$name.'.json';
+    if (! is_file($path)) {
+        throw new RuntimeException("Missing fixture: {$path}");
+    }
+
+    /** @var array<string, mixed> $payload */
+    $payload = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+
+    return $payload;
+}
+
+/** @return array<string, mixed> */
 function forecastPayload(): array
 {
-    return [
-        'latitude' => 52.37,
-        'longitude' => 4.89,
-        'timezone' => 'Europe/Amsterdam',
-        'hourly' => [
-            'time' => ['2026-07-06T12:00'],
-            'temperature_2m' => [18.0],
-            'apparent_temperature' => [17.0],
-            'precipitation' => [0.0],
-            'weathercode' => [0],
-            'windspeed_10m' => [5.5],
-            'winddirection_10m' => [90],
-            'is_day' => [1],
-        ],
-        'daily' => [],
-        'hourly_units' => ['time' => 'iso8601', 'temperature_2m' => '°C'],
-        'daily_units' => [],
-    ];
+    return fixturePayload('forecast');
+}
+
+/** @return array<string, mixed> */
+function airQualityPayload(): array
+{
+    return fixturePayload('air_quality');
+}
+
+/** @return array<string, mixed> */
+function marinePayload(): array
+{
+    return fixturePayload('marine');
+}
+
+/** @return array<string, mixed> */
+function climatePayload(): array
+{
+    return fixturePayload('climate');
+}
+
+/** @return array<string, mixed> */
+function floodPayload(): array
+{
+    return fixturePayload('flood');
+}
+
+/** @return array<string, mixed> */
+function ensemblePayload(): array
+{
+    return fixturePayload('ensemble');
+}
+
+/** @return array<string, mixed> */
+function seasonalPayload(): array
+{
+    return fixturePayload('seasonal');
+}
+
+/** @return array<string, mixed> */
+function historicalPayload(): array
+{
+    return fixturePayload('historical');
+}
+
+/** @return array<string, mixed> */
+function elevationPayload(): array
+{
+    return fixturePayload('elevation');
 }
 
 /** @return array<string, mixed> */

@@ -21,7 +21,7 @@ covers(
 
 it('fetches historical archive data', function (): void {
     MockClient::global([
-        GetArchiveRequest::class => mockOk(forecastPayload()),
+        GetArchiveRequest::class => mockOk(historicalPayload()),
     ]);
 
     $connector = new HistoricalConnector;
@@ -31,6 +31,6 @@ it('fetches historical archive data', function (): void {
         ->between(new DateTimeImmutable('2024-06-01'), new DateTimeImmutable('2024-06-15'))
         ->dto();
 
-    expect($historical->latitude)->toBe(52.37)
+    expect($historical->latitude)->toBe(52.40773)
         ->and($historical->hourlyReadings()->count())->toBe(1);
 });

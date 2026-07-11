@@ -130,4 +130,9 @@ final class SearchRequest extends Request implements ResolvesRequestUrlContract
             ),
         );
     }
+
+    public function dto(): GeocodingLocationCollection
+    {
+        return $this->resolveDto(GeocodingLocationCollection::class);
+    }
 }

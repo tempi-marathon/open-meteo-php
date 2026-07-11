@@ -13,7 +13,7 @@ use TempiMarathon\OpenMeteo\Data\HistoricalResponse;
 use TempiMarathon\OpenMeteo\Enums\DailyVariable;
 use TempiMarathon\OpenMeteo\Enums\HourlyVariable;
 use TempiMarathon\OpenMeteo\Enums\Timezone;
-use TempiMarathon\OpenMeteo\Support\CreatesForecastResponse;
+use TempiMarathon\OpenMeteo\Support\CreatesTimeSeriesResponse;
 use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
 use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
@@ -25,7 +25,7 @@ use function Psl\Vec\values;
 
 final class GetArchiveRequest extends Request implements ResolvesRequestUrlContract
 {
-    use CreatesForecastResponse;
+    use CreatesTimeSeriesResponse;
     use HasApiKeyQuery;
     use ResolvesRequestUrl;
     use SendsThroughConnector;
@@ -122,15 +122,11 @@ final class GetArchiveRequest extends Request implements ResolvesRequestUrlContr
         /** @var array<string, mixed> $data */
         $data = $response->json();
 
-        $forecast = $this->createForecastResponseFromPayload($data);
+        return $this->createTimeSeriesResponseFromPayload($data, HistoricalResponse::class);
+    }
 
-        return new HistoricalResponse(
-            latitude: $forecast->latitude,
-            longitude: $forecast->longitude,
-            timezone: $forecast->timezone,
-            hourly: $forecast->hourly,
-            daily: $forecast->daily,
-            units: $forecast->units,
-        );
+    public function dto(): HistoricalResponse
+    {
+        return $this->resolveDto(HistoricalResponse::class);
     }
 }

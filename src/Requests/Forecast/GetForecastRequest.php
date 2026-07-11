@@ -14,7 +14,7 @@ use TempiMarathon\OpenMeteo\Data\ForecastResponseCollection;
 use TempiMarathon\OpenMeteo\Enums\DailyVariable;
 use TempiMarathon\OpenMeteo\Enums\HourlyVariable;
 use TempiMarathon\OpenMeteo\Enums\Timezone;
-use TempiMarathon\OpenMeteo\Support\CreatesForecastResponse;
+use TempiMarathon\OpenMeteo\Support\CreatesTimeSeriesResponse;
 use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
 use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
@@ -26,7 +26,7 @@ use function Psl\Vec\values;
 
 final class GetForecastRequest extends Request implements ResolvesRequestUrlContract
 {
-    use CreatesForecastResponse;
+    use CreatesTimeSeriesResponse;
     use HasApiKeyQuery;
     use ResolvesRequestUrl;
     use SendsThroughConnector;
@@ -201,5 +201,10 @@ final class GetForecastRequest extends Request implements ResolvesRequestUrlCont
         $data = $response->json();
 
         return $this->createForecastResponseCollectionFromPayload($data);
+    }
+
+    public function dto(): ForecastResponse
+    {
+        return $this->resolveDto(ForecastResponse::class);
     }
 }

@@ -9,6 +9,8 @@ use Saloon\Http\Response;
 
 trait SendsThroughConnector
 {
+    use ResolvesTypedDto;
+
     private ?Connector $connector = null;
 
     public function using(Connector $connector): static
@@ -25,10 +27,5 @@ trait SendsThroughConnector
         }
 
         return $this->connector->send($this);
-    }
-
-    public function dto(): mixed
-    {
-        return $this->send()->dtoOrFail();
     }
 }

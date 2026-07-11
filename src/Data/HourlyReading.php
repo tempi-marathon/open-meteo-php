@@ -11,12 +11,12 @@ final readonly class HourlyReading
 {
     public function __construct(
         public DateTimeImmutable $datetime,
-        public WeatherCode $weatherCode,
-        public float $temperature2m,
-        public float $apparentTemperature,
-        public float $windSpeed10m,
-        public int $windDirection10m,
-        public float $precipitation,
-        public bool $isDay,
+        public ?WeatherCode $weatherCode = null,
+        public ?float $temperature2m = null,
+        public ?float $apparentTemperature = null,
+        public ?float $windSpeed10m = null,
+        public ?int $windDirection10m = null,
+        public ?float $precipitation = null,
+        public ?bool $isDay = null,
     ) {}
 }

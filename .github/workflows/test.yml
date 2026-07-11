@@ -41,6 +41,10 @@ jobs:
       - name: Run tests
         run: composer test
 
+      - name: Run live smoke tests
+        run: vendor/bin/pest --group=live
+        continue-on-error: true
+
       - name: Run mutation tests
         run: composer test:infection
         continue-on-error: true

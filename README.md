@@ -1,6 +1,12 @@
-# tempi-marathon/open-meteo-php
+# 🌤 Open-Meteo PHP
+
+[![Tests](https://github.com/tempi-marathon/open-meteo-php/actions/workflows/test.yml/badge.svg)](https://github.com/tempi-marathon/open-meteo-php/actions/workflows/test.yml)
+[![PHP](https://img.shields.io/static/v1?label=PHP&message=%5E8.5&color=777BB4&logo=php&logoColor=white)](https://www.php.net/)
+[![License: MIT](https://img.shields.io/github/license/tempi-marathon/open-meteo-php)](LICENSE)
 
 Framework-agnostic [Saloon](https://docs.saloon.dev/) SDK for the [Open-Meteo](https://open-meteo.com/) APIs.
+
+[Open-Meteo](https://open-meteo.com/) · [Open-Meteo GitHub](https://github.com/open-meteo/open-meteo) · [SDK on GitHub](https://github.com/tempi-marathon/open-meteo-php)
 
 **No API key required.** The free, non-commercial Open-Meteo API works out of the box — install the package and start making requests.
 

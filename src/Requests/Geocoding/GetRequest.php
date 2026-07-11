@@ -42,4 +42,9 @@ final class GetRequest extends Request implements ResolvesRequestUrlContract
 
         return $this->parseGeocodingLocation($data);
     }
+
+    public function dto(): GeocodingLocation
+    {
+        return $this->resolveDto(GeocodingLocation::class);
+    }
 }

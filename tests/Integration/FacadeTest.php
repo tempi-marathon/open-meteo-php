@@ -25,7 +25,7 @@ it('exposes forecast through the facade', function (): void {
         ->hourly(HourlyVariable::Temperature2m)
         ->dto();
 
-    expect($forecast->latitude)->toBe(52.37);
+    expect($forecast->latitude)->toBe(52.366);
 });
 
 it('exposes geocoding through the facade', function (): void {

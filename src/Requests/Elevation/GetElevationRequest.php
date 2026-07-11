@@ -55,4 +55,9 @@ final class GetElevationRequest extends Request implements ResolvesRequestUrlCon
 
         return new ElevationResponse(elevation: $elevation);
     }
+
+    public function dto(): ElevationResponse
+    {
+        return $this->resolveDto(ElevationResponse::class);
+    }
 }

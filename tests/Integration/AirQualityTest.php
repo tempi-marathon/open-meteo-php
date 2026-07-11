@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Saloon\Http\Faking\MockClient;
 use TempiMarathon\OpenMeteo\Connectors\AirQualityConnector;
-use TempiMarathon\OpenMeteo\Data\ForecastResponse;
+use TempiMarathon\OpenMeteo\Data\AirQualityResponse;
 use TempiMarathon\OpenMeteo\Data\ForecastUnits;
 use TempiMarathon\OpenMeteo\Enums\AirQualityHourlyVariable;
 use TempiMarathon\OpenMeteo\Enums\Timezone;
@@ -15,14 +15,14 @@ covers(
     AirQualityConnector::class,
     AirQualityResource::class,
     GetAirQualityRequest::class,
-    ForecastResponse::class,
+    AirQualityResponse::class,
     ForecastUnits::class,
     AirQualityHourlyVariable::class,
 );
 
 it('fetches air quality data', function (): void {
     MockClient::global([
-        GetAirQualityRequest::class => mockOk(forecastPayload()),
+        GetAirQualityRequest::class => mockOk(airQualityPayload()),
     ]);
 
     $connector = new AirQualityConnector;
@@ -31,7 +31,9 @@ it('fetches air quality data', function (): void {
         ->between(new DateTimeImmutable('2026-07-01'), new DateTimeImmutable('2026-07-07'))
         ->dto();
 
-    expect($response->timezone)->toBe('Europe/Amsterdam');
+    expect($response)->toBeInstanceOf(AirQualityResponse::class)
+        ->and($response->timezone)->toBe('Europe/Amsterdam')
+        ->and($response->hourly)->toHaveKey('european_aqi');
 });
 
 it('includes custom hourly variables', function (): void {
