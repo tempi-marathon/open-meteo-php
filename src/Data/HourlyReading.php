@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Data;
+namespace TempiMarathon\OpenMeteo\Data;
 
 use DateTimeImmutable;
-use OpenMeteo\Enums\WeatherCode;
+use TempiMarathon\OpenMeteo\Enums\WeatherCode;
 
-final readonly class HourlyWeatherSlot
+final readonly class HourlyReading
 {
     public function __construct(
         public DateTimeImmutable $datetime,

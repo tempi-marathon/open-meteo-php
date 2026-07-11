@@ -21,10 +21,9 @@ it('exposes forecast through the facade', function (): void {
     ]);
 
     $client = new OpenMeteo;
-    $forecast = $client->forecast()->send(
-        $client->forecast()->weather()->get(52.37, 4.89)
-            ->hourly(HourlyVariable::Temperature2m),
-    )->dto();
+    $forecast = $client->forecast()->weather()->get(52.37, 4.89)
+        ->hourly(HourlyVariable::Temperature2m)
+        ->dto();
 
     expect($forecast->latitude)->toBe(52.37);
 });
@@ -35,9 +34,7 @@ it('exposes geocoding through the facade', function (): void {
     ]);
 
     $client = new OpenMeteo;
-    $locations = $client->geocoding()->send(
-        $client->geocoding()->locations()->search('Amsterdam'),
-    )->dto();
+    $locations = $client->geocoding()->locations()->search('Amsterdam')->dto();
 
     expect($locations->count())->toBe(1);
 });

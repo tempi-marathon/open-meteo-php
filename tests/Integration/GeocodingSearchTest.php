@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-use OpenMeteo\Connectors\GeocodingConnector;
-use OpenMeteo\Data\GeocodingLocation;
-use OpenMeteo\Data\GeocodingLocationCollection;
-use OpenMeteo\Enums\CountryCode;
-use OpenMeteo\Enums\Geocoding\GeocodingFormat;
-use OpenMeteo\Enums\Geocoding\GeocodingLanguage;
-use OpenMeteo\Enums\Timezone;
-use OpenMeteo\Exceptions\OpenMeteoRequestException;
-use OpenMeteo\Requests\Geocoding\GetRequest;
-use OpenMeteo\Requests\Geocoding\SearchRequest;
-use OpenMeteo\Resources\GeocodingResource;
-use OpenMeteo\Support\HasApiKeyQuery;
-use OpenMeteo\Support\ParsesGeocodingLocation;
 use Saloon\Http\Faking\MockClient;
+use TempiMarathon\OpenMeteo\Connectors\GeocodingConnector;
+use TempiMarathon\OpenMeteo\Data\GeocodingLocation;
+use TempiMarathon\OpenMeteo\Data\GeocodingLocationCollection;
+use TempiMarathon\OpenMeteo\Enums\CountryCode;
+use TempiMarathon\OpenMeteo\Enums\Geocoding\GeocodingFormat;
+use TempiMarathon\OpenMeteo\Enums\Geocoding\GeocodingLanguage;
+use TempiMarathon\OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoRequestException;
+use TempiMarathon\OpenMeteo\Requests\Geocoding\GetRequest;
+use TempiMarathon\OpenMeteo\Requests\Geocoding\SearchRequest;
+use TempiMarathon\OpenMeteo\Resources\GeocodingResource;
+use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
+use TempiMarathon\OpenMeteo\Support\ParsesGeocodingLocation;
 
 covers(
     GeocodingConnector::class,
@@ -39,13 +39,12 @@ it('searches locations', function (): void {
     ]);
 
     $connector = new GeocodingConnector;
-    $collection = $connector->send(
-        $connector->locations()->search('Amsterdam')
-            ->language(GeocodingLanguage::English)
-            ->countryCode(CountryCode::NL)
-            ->format(GeocodingFormat::Json)
-            ->count(5),
-    )->dto();
+    $collection = $connector->locations()->search('Amsterdam')
+        ->language(GeocodingLanguage::English)
+        ->countryCode(CountryCode::NL)
+        ->format(GeocodingFormat::Json)
+        ->count(5)
+        ->dto();
 
     $location = $collection->first();
 
@@ -63,7 +62,7 @@ it('returns empty collection when results are missing', function (): void {
 
     $connector = new GeocodingConnector;
 
-    expect($connector->send($connector->locations()->search('Nowhere'))->dto()->count())->toBe(0);
+    expect($connector->locations()->search('Nowhere')->dto()->count())->toBe(0);
 });
 
 it('validates count range', function (): void {
@@ -78,7 +77,7 @@ it('throws open meteo request exception on api errors', function (): void {
 
     $connector = new GeocodingConnector;
 
-    expect(fn () => $connector->send($connector->locations()->search(''))->throw())
+    expect(fn () => $connector->locations()->search('')->send()->throw())
         ->toThrow(OpenMeteoRequestException::class, 'Invalid name');
 });
 

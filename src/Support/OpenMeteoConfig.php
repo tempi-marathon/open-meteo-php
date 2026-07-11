@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Support;
+namespace TempiMarathon\OpenMeteo\Support;
 
 final class OpenMeteoConfig
 {

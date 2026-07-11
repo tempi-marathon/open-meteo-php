@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use OpenMeteo\Support\OpenMeteoConfig;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 
 uses()->beforeEach(function (): void {
     MockClient::destroyGlobal();

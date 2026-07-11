@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Requests\Elevation;
+namespace TempiMarathon\OpenMeteo\Requests\Elevation;
 
-use OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
-use OpenMeteo\Data\ElevationResponse;
-use OpenMeteo\Support\HasApiKeyQuery;
-use OpenMeteo\Support\ResolvesRequestUrl;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
+use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
+use TempiMarathon\OpenMeteo\Data\ElevationResponse;
+use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
+use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
+use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
 
 use function Psl\Type\float;
 use function Psl\Type\vec;
@@ -19,6 +20,7 @@ final class GetElevationRequest extends Request implements ResolvesRequestUrlCon
 {
     use HasApiKeyQuery;
     use ResolvesRequestUrl;
+    use SendsThroughConnector;
 
     protected Method $method = Method::GET;
 

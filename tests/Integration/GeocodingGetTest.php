@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use OpenMeteo\Connectors\GeocodingConnector;
-use OpenMeteo\Enums\CountryCode;
-use OpenMeteo\Enums\Timezone;
-use OpenMeteo\Requests\Geocoding\GetRequest;
-use OpenMeteo\Resources\GeocodingResource;
 use Saloon\Http\Faking\MockClient;
+use TempiMarathon\OpenMeteo\Connectors\GeocodingConnector;
+use TempiMarathon\OpenMeteo\Enums\CountryCode;
+use TempiMarathon\OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\Requests\Geocoding\GetRequest;
+use TempiMarathon\OpenMeteo\Resources\GeocodingResource;
 
 covers(
     GeocodingConnector::class,
@@ -21,7 +21,7 @@ it('gets a location by id', function (): void {
     ]);
 
     $connector = new GeocodingConnector;
-    $location = $connector->send($connector->locations()->get(2759794))->dto();
+    $location = $connector->locations()->get(2759794)->dto();
 
     expect($location->id)->toBe(2759794)
         ->and($location->name)->toBe('Amsterdam')

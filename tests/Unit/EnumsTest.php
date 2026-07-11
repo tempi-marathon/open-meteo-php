@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use OpenMeteo\Enums\CountryCode;
-use OpenMeteo\Enums\DailyVariable;
-use OpenMeteo\Enums\Geocoding\GeocodingFormat;
-use OpenMeteo\Enums\Geocoding\GeocodingLanguage;
-use OpenMeteo\Enums\HourlyVariable;
-use OpenMeteo\Enums\TimeFormat;
-use OpenMeteo\Enums\Timezone;
-use OpenMeteo\Enums\WeatherCode;
+use TempiMarathon\OpenMeteo\Enums\CountryCode;
+use TempiMarathon\OpenMeteo\Enums\DailyVariable;
+use TempiMarathon\OpenMeteo\Enums\Geocoding\GeocodingFormat;
+use TempiMarathon\OpenMeteo\Enums\Geocoding\GeocodingLanguage;
+use TempiMarathon\OpenMeteo\Enums\HourlyVariable;
+use TempiMarathon\OpenMeteo\Enums\TimeFormat;
+use TempiMarathon\OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\Enums\WeatherCode;
 
 covers(
     GeocodingLanguage::class,

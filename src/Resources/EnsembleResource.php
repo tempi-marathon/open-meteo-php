@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Resources;
+namespace TempiMarathon\OpenMeteo\Resources;
 
-use OpenMeteo\Requests\Ensemble\GetEnsembleRequest;
+use TempiMarathon\OpenMeteo\Requests\Ensemble\GetEnsembleRequest;
 
 final class EnsembleResource extends BaseResource
 {
     public function get(float $latitude, float $longitude): GetEnsembleRequest
     {
-        return GetEnsembleRequest::forCoordinates($latitude, $longitude);
+        return GetEnsembleRequest::forCoordinates($latitude, $longitude)->using($this->connector);
     }
 }

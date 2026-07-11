@@ -2,25 +2,27 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Requests\Geocoding;
+namespace TempiMarathon\OpenMeteo\Requests\Geocoding;
 
-use OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
-use OpenMeteo\Data\GeocodingLocationCollection;
-use OpenMeteo\Enums\CountryCode;
-use OpenMeteo\Enums\Geocoding\GeocodingFormat;
-use OpenMeteo\Enums\Geocoding\GeocodingLanguage;
-use OpenMeteo\Support\HasApiKeyQuery;
-use OpenMeteo\Support\ParsesGeocodingLocation;
-use OpenMeteo\Support\ResolvesRequestUrl;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
+use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
+use TempiMarathon\OpenMeteo\Data\GeocodingLocationCollection;
+use TempiMarathon\OpenMeteo\Enums\CountryCode;
+use TempiMarathon\OpenMeteo\Enums\Geocoding\GeocodingFormat;
+use TempiMarathon\OpenMeteo\Enums\Geocoding\GeocodingLanguage;
+use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
+use TempiMarathon\OpenMeteo\Support\ParsesGeocodingLocation;
+use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
+use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
 
 final class SearchRequest extends Request implements ResolvesRequestUrlContract
 {
     use HasApiKeyQuery;
     use ParsesGeocodingLocation;
     use ResolvesRequestUrl;
+    use SendsThroughConnector;
 
     protected Method $method = Method::GET;
 
@@ -40,31 +42,28 @@ final class SearchRequest extends Request implements ResolvesRequestUrlContract
 
     public function __construct(private readonly string $name) {}
 
-    public function language(GeocodingLanguage $language): self
+    public function language(GeocodingLanguage $language): static
     {
-        $clone = clone $this;
-        $clone->language = $language;
-
-        return $clone;
+        return clone ($this, [
+            'language' => $language,
+        ]);
     }
 
-    public function countryCode(CountryCode $countryCode): self
+    public function countryCode(CountryCode $countryCode): static
     {
-        $clone = clone $this;
-        $clone->countryCode = $countryCode;
-
-        return $clone;
+        return clone ($this, [
+            'countryCode' => $countryCode,
+        ]);
     }
 
-    public function format(GeocodingFormat $format): self
+    public function format(GeocodingFormat $format): static
     {
-        $clone = clone $this;
-        $clone->format = $format;
-
-        return $clone;
+        return clone ($this, [
+            'format' => $format,
+        ]);
     }
 
-    public function count(int $count): self
+    public function count(int $count): static
     {
         if ($count < self::MIN_COUNT || $count > self::MAX_COUNT) {
             throw new \InvalidArgumentException(
@@ -72,10 +71,9 @@ final class SearchRequest extends Request implements ResolvesRequestUrlContract
             );
         }
 
-        $clone = clone $this;
-        $clone->count = $count;
-
-        return $clone;
+        return clone ($this, [
+            'count' => $count,
+        ]);
     }
 
     public function resolveEndpoint(): string

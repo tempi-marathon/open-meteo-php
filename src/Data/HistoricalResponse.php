@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Data;
+namespace TempiMarathon\OpenMeteo\Data;
 
-use OpenMeteo\Support\ParsesHourlySlots;
+use TempiMarathon\OpenMeteo\Support\ParsesHourlyReadings;
 
 final readonly class HistoricalResponse
 {
-    use ParsesHourlySlots;
+    use ParsesHourlyReadings;
 
     /**
      * @param  array<string, list<int|float|string|null>>  $hourly
@@ -23,8 +23,8 @@ final readonly class HistoricalResponse
         public ForecastUnits $units,
     ) {}
 
-    public function hourlySlots(): HourlySlotCollection
+    public function hourlyReadings(): HourlyReadingCollection
     {
-        return $this->createHourlySlotCollection($this->hourly);
+        return $this->createHourlyReadingCollection($this->hourly);
     }
 }

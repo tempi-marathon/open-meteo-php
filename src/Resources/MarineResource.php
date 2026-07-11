@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Resources;
+namespace TempiMarathon\OpenMeteo\Resources;
 
-use OpenMeteo\Requests\Marine\GetMarineRequest;
+use TempiMarathon\OpenMeteo\Requests\Marine\GetMarineRequest;
 
 final class MarineResource extends BaseResource
 {
     public function get(float $latitude, float $longitude): GetMarineRequest
     {
-        return GetMarineRequest::forCoordinates($latitude, $longitude);
+        return GetMarineRequest::forCoordinates($latitude, $longitude)->using($this->connector);
     }
 }

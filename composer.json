@@ -22,13 +22,13 @@
   },
   "autoload": {
     "psr-4": {
-      "OpenMeteo\\": "src/",
-      "OpenMeteo\\Laravel\\": "laravel/"
+      "TempiMarathon\\OpenMeteo\\": "src/",
+      "TempiMarathon\\OpenMeteo\\Laravel\\": "laravel/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "OpenMeteo\\Tests\\": "tests/"
+      "TempiMarathon\\OpenMeteo\\Tests\\": "tests/"
     }
   },
   "scripts": {
@@ -57,7 +57,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "OpenMeteo\\Laravel\\OpenMeteoServiceProvider"
+        "TempiMarathon\\OpenMeteo\\Laravel\\OpenMeteoServiceProvider"
       ]
     }
   }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Support;
+namespace TempiMarathon\OpenMeteo\Support;
 
 trait HasApiKeyQuery
 {
@@ -10,10 +10,9 @@ trait HasApiKeyQuery
 
     public function apiKey(string $apiKey): static
     {
-        $clone = clone $this;
-        $clone->apiKey = $apiKey;
-
-        return $clone;
+        return clone ($this, [
+            'apiKey' => $apiKey,
+        ]);
     }
 
     /**

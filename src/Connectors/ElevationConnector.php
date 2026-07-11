@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Connectors;
+namespace TempiMarathon\OpenMeteo\Connectors;
 
-use OpenMeteo\Resources\ElevationResource;
-use OpenMeteo\Support\OpenMeteoConfig;
+use TempiMarathon\OpenMeteo\Resources\ElevationResource;
+use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 
 final class ElevationConnector extends BaseConnector
 {

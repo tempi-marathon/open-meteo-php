@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Connectors;
+namespace TempiMarathon\OpenMeteo\Connectors;
 
-use OpenMeteo\Resources\FloodResource;
-use OpenMeteo\Support\OpenMeteoConfig;
+use TempiMarathon\OpenMeteo\Resources\FloodResource;
+use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 
 final class FloodConnector extends BaseConnector
 {

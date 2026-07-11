@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-use OpenMeteo\Connectors\ForecastConnector;
-use OpenMeteo\Connectors\GeocodingConnector;
-use OpenMeteo\Data\ForecastResponseCollection;
-use OpenMeteo\Data\GeocodingLocationCollection;
-use OpenMeteo\Enums\DailyVariable;
-use OpenMeteo\Exceptions\OpenMeteoRequestException;
-use OpenMeteo\Requests\Forecast\GetForecastRequest;
-use OpenMeteo\Requests\Geocoding\GetRequest;
-use OpenMeteo\Requests\Geocoding\SearchRequest;
-use OpenMeteo\Requests\Historical\GetArchiveRequest;
-use OpenMeteo\Resources\BaseResource;
-use OpenMeteo\Support\OpenMeteoConfig;
 use Saloon\Http\PendingRequest;
 use Saloon\Http\Response;
+use TempiMarathon\OpenMeteo\Connectors\ForecastConnector;
+use TempiMarathon\OpenMeteo\Connectors\GeocodingConnector;
+use TempiMarathon\OpenMeteo\Data\ForecastResponseCollection;
+use TempiMarathon\OpenMeteo\Data\GeocodingLocationCollection;
+use TempiMarathon\OpenMeteo\Enums\DailyVariable;
+use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoRequestException;
+use TempiMarathon\OpenMeteo\Requests\Forecast\GetForecastRequest;
+use TempiMarathon\OpenMeteo\Requests\Geocoding\GetRequest;
+use TempiMarathon\OpenMeteo\Requests\Geocoding\SearchRequest;
+use TempiMarathon\OpenMeteo\Requests\Historical\GetArchiveRequest;
+use TempiMarathon\OpenMeteo\Resources\BaseResource;
+use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 
 covers(
     BaseResource::class,

@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Resources;
+namespace TempiMarathon\OpenMeteo\Resources;
 
-use OpenMeteo\Requests\Geocoding\GetRequest;
-use OpenMeteo\Requests\Geocoding\SearchRequest;
+use TempiMarathon\OpenMeteo\Requests\Geocoding\GetRequest;
+use TempiMarathon\OpenMeteo\Requests\Geocoding\SearchRequest;
 
 final class GeocodingResource extends BaseResource
 {
     public function search(string $name): SearchRequest
     {
-        return new SearchRequest($name);
+        return (new SearchRequest($name))->using($this->connector);
     }
 
     public function get(int $id): GetRequest
     {
-        return new GetRequest($id);
+        return (new GetRequest($id))->using($this->connector);
     }
 }

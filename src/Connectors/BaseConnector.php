@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Connectors;
+namespace TempiMarathon\OpenMeteo\Connectors;
 
-use OpenMeteo\Exceptions\OpenMeteoRequestException;
-use OpenMeteo\Support\OpenMeteoConfig;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Connector;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
+use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoRequestException;
+use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 use Throwable;
 
 abstract class BaseConnector extends Connector

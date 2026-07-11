@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Laravel;
+namespace TempiMarathon\OpenMeteo\Laravel;
 
 use Illuminate\Support\ServiceProvider;
-use OpenMeteo\Support\OpenMeteoConfig;
+use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 
 final class OpenMeteoServiceProvider extends ServiceProvider
 {

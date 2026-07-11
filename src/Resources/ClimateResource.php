@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Resources;
+namespace TempiMarathon\OpenMeteo\Resources;
 
-use OpenMeteo\Requests\Climate\GetClimateRequest;
+use TempiMarathon\OpenMeteo\Requests\Climate\GetClimateRequest;
 
 final class ClimateResource extends BaseResource
 {
     public function get(float $latitude, float $longitude): GetClimateRequest
     {
-        return GetClimateRequest::forCoordinates($latitude, $longitude);
+        return GetClimateRequest::forCoordinates($latitude, $longitude)->using($this->connector);
     }
 }

@@ -2,22 +2,24 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Requests\Climate;
+namespace TempiMarathon\OpenMeteo\Requests\Climate;
 
-use OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
-use OpenMeteo\Data\ForecastResponse;
-use OpenMeteo\Support\CreatesForecastResponse;
-use OpenMeteo\Support\HasApiKeyQuery;
-use OpenMeteo\Support\ResolvesRequestUrl;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
+use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
+use TempiMarathon\OpenMeteo\Data\ForecastResponse;
+use TempiMarathon\OpenMeteo\Support\CreatesForecastResponse;
+use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
+use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
+use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
 
 final class GetClimateRequest extends Request implements ResolvesRequestUrlContract
 {
     use CreatesForecastResponse;
     use HasApiKeyQuery;
     use ResolvesRequestUrl;
+    use SendsThroughConnector;
 
     protected Method $method = Method::GET;
 

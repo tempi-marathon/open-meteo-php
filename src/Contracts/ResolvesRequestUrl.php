@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Contracts;
+namespace TempiMarathon\OpenMeteo\Contracts;
 
 use Saloon\Http\Connector;
 

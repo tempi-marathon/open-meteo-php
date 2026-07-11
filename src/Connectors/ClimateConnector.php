@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Connectors;
+namespace TempiMarathon\OpenMeteo\Connectors;
 
-use OpenMeteo\Resources\ClimateResource;
-use OpenMeteo\Support\OpenMeteoConfig;
+use TempiMarathon\OpenMeteo\Resources\ClimateResource;
+use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 
 final class ClimateConnector extends BaseConnector
 {

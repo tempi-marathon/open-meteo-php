@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Tests\Support;
+namespace TempiMarathon\OpenMeteo\Tests\Support;
 
-use OpenMeteo\Support\ResolvesRequestUrl;
+use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 
 final class InvalidResolvesRequestUrlUser
 {

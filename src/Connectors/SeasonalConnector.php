@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Connectors;
+namespace TempiMarathon\OpenMeteo\Connectors;
 
-use OpenMeteo\Resources\SeasonalResource;
-use OpenMeteo\Support\OpenMeteoConfig;
+use TempiMarathon\OpenMeteo\Resources\SeasonalResource;
+use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 
 final class SeasonalConnector extends BaseConnector
 {

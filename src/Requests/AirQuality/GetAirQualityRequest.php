@@ -2,24 +2,26 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Requests\AirQuality;
+namespace TempiMarathon\OpenMeteo\Requests\AirQuality;
 
 use DateTimeInterface;
-use OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
-use OpenMeteo\Data\ForecastResponse;
-use OpenMeteo\Enums\Timezone;
-use OpenMeteo\Support\CreatesForecastResponse;
-use OpenMeteo\Support\HasApiKeyQuery;
-use OpenMeteo\Support\ResolvesRequestUrl;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
+use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
+use TempiMarathon\OpenMeteo\Data\ForecastResponse;
+use TempiMarathon\OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\Support\CreatesForecastResponse;
+use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
+use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
+use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
 
 final class GetAirQualityRequest extends Request implements ResolvesRequestUrlContract
 {
     use CreatesForecastResponse;
     use HasApiKeyQuery;
     use ResolvesRequestUrl;
+    use SendsThroughConnector;
 
     protected Method $method = Method::GET;
 
@@ -42,29 +44,26 @@ final class GetAirQualityRequest extends Request implements ResolvesRequestUrlCo
         return new self($latitude, $longitude);
     }
 
-    public function between(DateTimeInterface $start, DateTimeInterface $end): self
+    public function between(DateTimeInterface $start, DateTimeInterface $end): static
     {
-        $clone = clone $this;
-        $clone->startDate = $start;
-        $clone->endDate = $end;
-
-        return $clone;
+        return clone ($this, [
+            'startDate' => $start,
+            'endDate' => $end,
+        ]);
     }
 
-    public function timezone(Timezone $timezone): self
+    public function timezone(Timezone $timezone): static
     {
-        $clone = clone $this;
-        $clone->timezone = $timezone;
-
-        return $clone;
+        return clone ($this, [
+            'timezone' => $timezone,
+        ]);
     }
 
-    public function hourly(string ...$variables): self
+    public function hourly(string ...$variables): static
     {
-        $clone = clone $this;
-        $clone->hourly = array_values($variables);
-
-        return $clone;
+        return clone ($this, [
+            'hourly' => array_values($variables),
+        ]);
     }
 
     public function resolveEndpoint(): string

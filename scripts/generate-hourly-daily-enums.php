@@ -40,7 +40,7 @@ function toCase(string $value): string
 
 function writeEnum(string $name, array $values, string $target): void
 {
-    $lines = ['<?php', '', 'declare(strict_types=1);', '', 'namespace OpenMeteo\Enums;', '', "enum {$name}: string", '{'];
+    $lines = ['<?php', '', 'declare(strict_types=1);', '', 'namespace TempiMarathon\OpenMeteo\Enums;', '', "enum {$name}: string", '{'];
     foreach ($values as $value) {
         $lines[] = '    case '.toCase($value)." = '{$value}';";
     }

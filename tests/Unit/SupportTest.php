@@ -2,37 +2,39 @@
 
 declare(strict_types=1);
 
-use OpenMeteo\Connectors\ForecastConnector;
-use OpenMeteo\Connectors\GeocodingConnector;
-use OpenMeteo\Data\ForecastResponseCollection;
-use OpenMeteo\Data\GeocodingLocationCollection;
-use OpenMeteo\Data\HourlySlotCollection;
-use OpenMeteo\Data\HourlyWeatherSlot;
-use OpenMeteo\Enums\WeatherCode;
-use OpenMeteo\Exceptions\OpenMeteoRequestException;
-use OpenMeteo\Requests\Forecast\GetForecastRequest;
-use OpenMeteo\Requests\Geocoding\SearchRequest;
-use OpenMeteo\Resources\BaseResource;
-use OpenMeteo\Resources\ForecastResource;
-use OpenMeteo\Support\OpenMeteoConfig;
-use OpenMeteo\Support\ResolvesRequestUrl;
-use OpenMeteo\Tests\Support\InvalidResolvesRequestUrlUser;
 use Saloon\Enums\Method;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Request;
+use TempiMarathon\OpenMeteo\Connectors\ForecastConnector;
+use TempiMarathon\OpenMeteo\Connectors\GeocodingConnector;
+use TempiMarathon\OpenMeteo\Data\ForecastResponseCollection;
+use TempiMarathon\OpenMeteo\Data\GeocodingLocationCollection;
+use TempiMarathon\OpenMeteo\Data\HourlyReading;
+use TempiMarathon\OpenMeteo\Data\HourlyReadingCollection;
+use TempiMarathon\OpenMeteo\Enums\WeatherCode;
+use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoRequestException;
+use TempiMarathon\OpenMeteo\Requests\Forecast\GetForecastRequest;
+use TempiMarathon\OpenMeteo\Requests\Geocoding\SearchRequest;
+use TempiMarathon\OpenMeteo\Resources\BaseResource;
+use TempiMarathon\OpenMeteo\Resources\ForecastResource;
+use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
+use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
+use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
+use TempiMarathon\OpenMeteo\Tests\Support\InvalidResolvesRequestUrlUser;
 
 covers(
     BaseResource::class,
     OpenMeteoConfig::class,
     OpenMeteoRequestException::class,
-    HourlySlotCollection::class,
-    HourlyWeatherSlot::class,
+    HourlyReadingCollection::class,
+    HourlyReading::class,
     ForecastResponseCollection::class,
     GeocodingLocationCollection::class,
     ForecastResource::class,
     GetForecastRequest::class,
     SearchRequest::class,
     ResolvesRequestUrl::class,
+    SendsThroughConnector::class,
 );
 
 it('configures custom hosts and headers', function (): void {
@@ -63,9 +65,9 @@ it('exposes open meteo request exception details', function (): void {
         ->and($exception->getMessage())->toBe('Bad request');
 });
 
-it('finds the closest hourly slot', function (): void {
-    $slots = new HourlySlotCollection([
-        new HourlyWeatherSlot(
+it('finds the closest hourly reading', function (): void {
+    $readings = new HourlyReadingCollection([
+        new HourlyReading(
             datetime: new DateTimeImmutable('2026-07-06T10:00'),
             weatherCode: WeatherCode::CLEAR,
             temperature2m: 16.0,
@@ -75,7 +77,7 @@ it('finds the closest hourly slot', function (): void {
             precipitation: 0.0,
             isDay: true,
         ),
-        new HourlyWeatherSlot(
+        new HourlyReading(
             datetime: new DateTimeImmutable('2026-07-06T12:00'),
             weatherCode: WeatherCode::RAIN,
             temperature2m: 18.0,
@@ -87,16 +89,16 @@ it('finds the closest hourly slot', function (): void {
         ),
     ]);
 
-    $closest = $slots->closestTo(new DateTimeImmutable('2026-07-06T11:30'));
+    $closest = $readings->closestTo(new DateTimeImmutable('2026-07-06T11:30'));
 
     expect($closest?->weatherCode)->toBe(WeatherCode::RAIN)
-        ->and($slots->closestTo(new DateTimeImmutable('2026-07-06T10:15'))?->weatherCode)->toBe(WeatherCode::CLEAR)
-        ->and($slots->count())->toBe(2)
-        ->and(iterator_to_array($slots))->toHaveCount(2);
+        ->and($readings->closestTo(new DateTimeImmutable('2026-07-06T10:15'))?->weatherCode)->toBe(WeatherCode::CLEAR)
+        ->and($readings->count())->toBe(2)
+        ->and(iterator_to_array($readings))->toHaveCount(2);
 });
 
-it('returns null for empty slot collections', function (): void {
-    expect((new HourlySlotCollection([]))->closestTo(new DateTimeImmutable))->toBeNull();
+it('returns null for empty reading collections', function (): void {
+    expect((new HourlyReadingCollection([]))->closestTo(new DateTimeImmutable))->toBeNull();
 });
 
 it('iterates forecast response collections', function (): void {
@@ -106,7 +108,7 @@ it('iterates forecast response collections', function (): void {
 
     $connector = new ForecastConnector;
     $request = $connector->weather()->get(52.37, 4.89);
-    $collection = $request->createDtoCollectionFromResponse($connector->send($request));
+    $collection = $request->createDtoCollectionFromResponse($request->send());
 
     expect($collection)->toBeInstanceOf(ForecastResponseCollection::class)
         ->and($collection->count())->toBe(1)
@@ -119,7 +121,7 @@ it('iterates geocoding location collections', function (): void {
     ]);
 
     $connector = new GeocodingConnector;
-    $collection = $connector->send($connector->locations()->search('Amsterdam'))->dto();
+    $collection = $connector->locations()->search('Amsterdam')->dto();
 
     expect($collection)->toBeInstanceOf(GeocodingLocationCollection::class)
         ->and($collection->count())->toBe(1);
@@ -151,4 +153,22 @@ it('throws when resolving request url on invalid object', function (): void {
     $invalid = new InvalidResolvesRequestUrlUser;
 
     expect(fn () => $invalid->resolveRequestUrl(new ForecastConnector))->toThrow(LogicException::class);
+});
+
+it('requires a connector before sending', function (): void {
+    expect(fn () => GetForecastRequest::forCoordinates(52.37, 4.89)->send())
+        ->toThrow(LogicException::class, 'No connector set');
+});
+
+it('allows attaching a connector with using', function (): void {
+    MockClient::global([
+        GetForecastRequest::class => mockOk(forecastPayload()),
+    ]);
+
+    $connector = new ForecastConnector;
+    $forecast = GetForecastRequest::forCoordinates(52.37, 4.89)
+        ->using($connector)
+        ->dto();
+
+    expect($forecast->latitude)->toBe(52.37);
 });

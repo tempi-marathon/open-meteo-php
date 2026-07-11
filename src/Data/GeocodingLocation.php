@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Data;
+namespace TempiMarathon\OpenMeteo\Data;
 
-use OpenMeteo\Enums\CountryCode;
-use OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\Enums\CountryCode;
+use TempiMarathon\OpenMeteo\Enums\Timezone;
 
 final readonly class GeocodingLocation
 {

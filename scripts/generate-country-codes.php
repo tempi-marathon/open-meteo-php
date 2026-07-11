@@ -254,7 +254,7 @@ $codes = [
     'ZW',
 ];
 
-$lines = ['<?php', '', 'declare(strict_types=1);', '', 'namespace OpenMeteo\Enums;', '', 'enum CountryCode: string', '{'];
+$lines = ['<?php', '', 'declare(strict_types=1);', '', 'namespace TempiMarathon\OpenMeteo\Enums;', '', 'enum CountryCode: string', '{'];
 foreach ($codes as $code) {
     $lines[] = "    case {$code} = '{$code}';";
 }

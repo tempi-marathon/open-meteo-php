@@ -2,26 +2,28 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Requests\Historical;
+namespace TempiMarathon\OpenMeteo\Requests\Historical;
 
 use DateTimeInterface;
-use OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
-use OpenMeteo\Data\HistoricalResponse;
-use OpenMeteo\Enums\DailyVariable;
-use OpenMeteo\Enums\HourlyVariable;
-use OpenMeteo\Enums\Timezone;
-use OpenMeteo\Support\CreatesForecastResponse;
-use OpenMeteo\Support\HasApiKeyQuery;
-use OpenMeteo\Support\ResolvesRequestUrl;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
+use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
+use TempiMarathon\OpenMeteo\Data\HistoricalResponse;
+use TempiMarathon\OpenMeteo\Enums\DailyVariable;
+use TempiMarathon\OpenMeteo\Enums\HourlyVariable;
+use TempiMarathon\OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\Support\CreatesForecastResponse;
+use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
+use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
+use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
 
 final class GetArchiveRequest extends Request implements ResolvesRequestUrlContract
 {
     use CreatesForecastResponse;
     use HasApiKeyQuery;
     use ResolvesRequestUrl;
+    use SendsThroughConnector;
 
     protected Method $method = Method::GET;
 
@@ -47,37 +49,33 @@ final class GetArchiveRequest extends Request implements ResolvesRequestUrlContr
         return new self($latitude, $longitude);
     }
 
-    public function hourly(HourlyVariable ...$variables): self
+    public function hourly(HourlyVariable ...$variables): static
     {
-        $clone = clone $this;
-        $clone->hourly = array_values($variables);
-
-        return $clone;
+        return clone ($this, [
+            'hourly' => array_values($variables),
+        ]);
     }
 
-    public function daily(DailyVariable ...$variables): self
+    public function daily(DailyVariable ...$variables): static
     {
-        $clone = clone $this;
-        $clone->daily = array_values($variables);
-
-        return $clone;
+        return clone ($this, [
+            'daily' => array_values($variables),
+        ]);
     }
 
-    public function between(DateTimeInterface $start, DateTimeInterface $end): self
+    public function between(DateTimeInterface $start, DateTimeInterface $end): static
     {
-        $clone = clone $this;
-        $clone->startDate = $start;
-        $clone->endDate = $end;
-
-        return $clone;
+        return clone ($this, [
+            'startDate' => $start,
+            'endDate' => $end,
+        ]);
     }
 
-    public function timezone(Timezone $timezone): self
+    public function timezone(Timezone $timezone): static
     {
-        $clone = clone $this;
-        $clone->timezone = $timezone;
-
-        return $clone;
+        return clone ($this, [
+            'timezone' => $timezone,
+        ]);
     }
 
     public function resolveEndpoint(): string

@@ -15,7 +15,7 @@ $zones = array_merge(
     ),
 );
 
-$lines = ['<?php', '', 'declare(strict_types=1);', '', 'namespace OpenMeteo\Enums;', '', 'enum Timezone: string', '{'];
+$lines = ['<?php', '', 'declare(strict_types=1);', '', 'namespace TempiMarathon\OpenMeteo\Enums;', '', 'enum Timezone: string', '{'];
 foreach ($zones as $zone) {
     $case = preg_replace('/[^A-Za-z0-9]/', '', $zone) ?? 'Zone';
     if ($case === '' || ctype_digit($case[0])) {

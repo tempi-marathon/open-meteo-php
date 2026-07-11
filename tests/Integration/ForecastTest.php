@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-use OpenMeteo\Connectors\BaseConnector;
-use OpenMeteo\Connectors\ForecastConnector;
-use OpenMeteo\Data\ForecastResponse;
-use OpenMeteo\Data\ForecastUnits;
-use OpenMeteo\Enums\DailyVariable;
-use OpenMeteo\Enums\HourlyVariable;
-use OpenMeteo\Enums\Timezone;
-use OpenMeteo\Requests\Forecast\GetForecastRequest;
-use OpenMeteo\Resources\BaseResource;
-use OpenMeteo\Resources\ForecastResource;
-use OpenMeteo\Support\CreatesForecastResponse;
-use OpenMeteo\Support\OpenMeteoConfig;
 use Saloon\Http\Faking\MockClient;
+use TempiMarathon\OpenMeteo\Connectors\BaseConnector;
+use TempiMarathon\OpenMeteo\Connectors\ForecastConnector;
+use TempiMarathon\OpenMeteo\Data\ForecastResponse;
+use TempiMarathon\OpenMeteo\Data\ForecastUnits;
+use TempiMarathon\OpenMeteo\Enums\DailyVariable;
+use TempiMarathon\OpenMeteo\Enums\HourlyVariable;
+use TempiMarathon\OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\Requests\Forecast\GetForecastRequest;
+use TempiMarathon\OpenMeteo\Resources\BaseResource;
+use TempiMarathon\OpenMeteo\Resources\ForecastResource;
+use TempiMarathon\OpenMeteo\Support\CreatesForecastResponse;
+use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 
 covers(
     BaseConnector::class,
@@ -33,20 +33,19 @@ it('fetches a forecast', function (): void {
     ]);
 
     $connector = new ForecastConnector;
-    $forecast = $connector->send(
-        $connector->weather()->get(52.37, 4.89)
-            ->hourly(HourlyVariable::Temperature2m, HourlyVariable::WeatherCode)
-            ->daily(DailyVariable::Temperature2mMax)
-            ->timezone(Timezone::EuropeAmsterdam)
-            ->forecastDays(7)
-            ->pastDays(1)
-            ->forecastHours(48),
-    )->dto();
+    $forecast = $connector->weather()->get(52.37, 4.89)
+        ->hourly(HourlyVariable::Temperature2m, HourlyVariable::WeatherCode)
+        ->daily(DailyVariable::Temperature2mMax)
+        ->timezone(Timezone::EuropeAmsterdam)
+        ->forecastDays(7)
+        ->pastDays(1)
+        ->forecastHours(48)
+        ->dto();
 
     expect($forecast->latitude)->toBe(52.37)
         ->and($forecast->timezone)->toBe('Europe/Amsterdam')
-        ->and($forecast->hourlySlots()->count())->toBe(1)
-        ->and($forecast->units->hourly['temperature_2m'])->toBe('°C');
+        ->and($forecast->hourlyReadings()->count())->toBe(1)
+        ->and($forecast->units->hourlyUnits['temperature_2m'])->toBe('°C');
 });
 
 it('normalizes modern hourly response keys', function (): void {
@@ -66,9 +65,9 @@ it('normalizes modern hourly response keys', function (): void {
     ]);
 
     $connector = new ForecastConnector;
-    $forecast = $connector->send($connector->weather()->get(52.37, 4.89))->dto();
+    $forecast = $connector->weather()->get(52.37, 4.89)->dto();
 
-    expect(iterator_to_array($forecast->hourlySlots())[0]->windSpeed10m)->toBe(5.5);
+    expect(iterator_to_array($forecast->hourlyReadings())[0]->windSpeed10m)->toBe(5.5);
 });
 
 it('builds a debug url', function (): void {
@@ -90,7 +89,7 @@ it('parses multi-location responses', function (): void {
 
     $connector = new ForecastConnector;
     $request = $connector->weather()->get(52.37, 4.89);
-    $collection = $request->createDtoCollectionFromResponse($connector->send($request));
+    $collection = $request->createDtoCollectionFromResponse($request->send());
 
     expect($collection->count())->toBe(2)
         ->and($collection->first()?->latitude)->toBe(52.37);

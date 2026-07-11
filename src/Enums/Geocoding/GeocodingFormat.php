@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Enums\Geocoding;
+namespace TempiMarathon\OpenMeteo\Enums\Geocoding;
 
 enum GeocodingFormat: string
 {

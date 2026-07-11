@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\ServiceProvider;
-use OpenMeteo\Connectors\BaseConnector;
-use OpenMeteo\Connectors\ForecastConnector;
-use OpenMeteo\Exceptions\OpenMeteoRequestException;
-use OpenMeteo\Laravel\OpenMeteoServiceProvider;
-use OpenMeteo\Requests\Forecast\GetForecastRequest;
-use OpenMeteo\Support\OpenMeteoConfig;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\PendingRequest;
+use TempiMarathon\OpenMeteo\Connectors\BaseConnector;
+use TempiMarathon\OpenMeteo\Connectors\ForecastConnector;
+use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoRequestException;
+use TempiMarathon\OpenMeteo\Laravel\OpenMeteoServiceProvider;
+use TempiMarathon\OpenMeteo\Requests\Forecast\GetForecastRequest;
+use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 
 covers(
     ForecastConnector::class,
@@ -39,7 +39,7 @@ it('retries transient failures', function (): void {
     ]);
 
     $connector = new ForecastConnector;
-    $response = $connector->send($connector->weather()->get(52.37, 4.89));
+    $response = $connector->weather()->get(52.37, 4.89)->send();
 
     expect($attempts)->toBe(2)
         ->and($response->successful())->toBeTrue();
@@ -53,7 +53,7 @@ it('does not retry client errors', function (): void {
     $connector = new ForecastConnector;
 
     try {
-        $connector->send($connector->weather()->get(52.37, 4.89));
+        $connector->weather()->get(52.37, 4.89)->send();
         expect(false)->toBeTrue('Expected exception');
     } catch (OpenMeteoRequestException $exception) {
         expect($exception->statusCode())->toBe(400);

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Data;
+namespace TempiMarathon\OpenMeteo\Data;
 
 final readonly class ForecastUnits
 {
     /**
-     * @param  array<string, string>  $hourly
-     * @param  array<string, string>  $daily
+     * @param  array<string, string>  $hourlyUnits
+     * @param  array<string, string>  $dailyUnits
      */
     public function __construct(
-        public array $hourly,
-        public array $daily,
+        public array $hourlyUnits,
+        public array $dailyUnits,
     ) {}
 }

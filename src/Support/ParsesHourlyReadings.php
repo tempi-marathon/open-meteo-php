@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Support;
+namespace TempiMarathon\OpenMeteo\Support;
 
 use DateTimeImmutable;
-use OpenMeteo\Data\HourlySlotCollection;
-use OpenMeteo\Data\HourlyWeatherSlot;
-use OpenMeteo\Enums\WeatherCode;
+use TempiMarathon\OpenMeteo\Data\HourlyReading;
+use TempiMarathon\OpenMeteo\Data\HourlyReadingCollection;
+use TempiMarathon\OpenMeteo\Enums\WeatherCode;
 
 use function Psl\Type\float;
 use function Psl\Type\int;
@@ -15,12 +15,12 @@ use function Psl\Type\shape;
 use function Psl\Type\string;
 use function Psl\Type\vec;
 
-trait ParsesHourlySlots
+trait ParsesHourlyReadings
 {
     /**
      * @param  array<string, list<int|float|string|null>>  $hourly
      */
-    protected function createHourlySlotCollection(array $hourly): HourlySlotCollection
+    protected function createHourlyReadingCollection(array $hourly): HourlyReadingCollection
     {
         $hourly = $this->normalizeHourlyKeys($hourly);
 
@@ -35,9 +35,9 @@ trait ParsesHourlySlots
             'is_day' => vec(int()),
         ])->coerce($hourly);
 
-        $slots = [];
+        $readings = [];
         foreach ($coerced['time'] as $index => $time) {
-            $slots[] = new HourlyWeatherSlot(
+            $readings[] = new HourlyReading(
                 datetime: new DateTimeImmutable($time),
                 weatherCode: WeatherCode::from($coerced['weathercode'][$index]),
                 temperature2m: $coerced['temperature_2m'][$index],
@@ -49,7 +49,7 @@ trait ParsesHourlySlots
             );
         }
 
-        return new HourlySlotCollection($slots);
+        return new HourlyReadingCollection($readings);
     }
 
     /**

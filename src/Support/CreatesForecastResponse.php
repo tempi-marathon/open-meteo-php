@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Support;
+namespace TempiMarathon\OpenMeteo\Support;
 
-use OpenMeteo\Data\ForecastResponse;
-use OpenMeteo\Data\ForecastResponseCollection;
-use OpenMeteo\Data\ForecastUnits;
+use TempiMarathon\OpenMeteo\Data\ForecastResponse;
+use TempiMarathon\OpenMeteo\Data\ForecastResponseCollection;
+use TempiMarathon\OpenMeteo\Data\ForecastUnits;
 
 use function Psl\Type\float;
 use function Psl\Type\mixed_dict;
@@ -15,7 +15,7 @@ use function Psl\Type\string;
 
 trait CreatesForecastResponse
 {
-    use ParsesHourlySlots;
+    use ParsesHourlyReadings;
 
     /**
      * @param  array<int|string, mixed>  $data
@@ -47,7 +47,7 @@ trait CreatesForecastResponse
             timezone: $root['timezone'],
             hourly: $hourly,
             daily: $daily,
-            units: new ForecastUnits(hourly: $hourlyUnits, daily: $dailyUnits),
+            units: new ForecastUnits(hourlyUnits: $hourlyUnits, dailyUnits: $dailyUnits),
         );
     }
 

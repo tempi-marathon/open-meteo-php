@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Illuminate\Config\Repository;
 use Illuminate\Foundation\Application;
-use OpenMeteo\Laravel\OpenMeteoServiceProvider;
-use OpenMeteo\Support\OpenMeteoConfig;
+use TempiMarathon\OpenMeteo\Laravel\OpenMeteoServiceProvider;
+use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 
 covers(
     OpenMeteoConfig::class,

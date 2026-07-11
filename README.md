@@ -8,33 +8,59 @@ Framework-agnostic Saloon SDK for Open-Meteo APIs.
 composer require tempi-marathon/open-meteo-php
 ```
 
+## Configuration
+
+Set environment variables:
+
+```bash
+export OPENMETEO_API_KEY=your-key
+export OPENMETEO_USER_AGENT=my-app/1.0
+```
+
+Laravel apps can publish `config/openmeteo.php` via the service provider and use `env('OPENMETEO_API_KEY')`.
+
 ## Usage
 
+### Facade (recommended entry point)
+
 ```php
-use OpenMeteo\Connectors\ForecastConnector;
-use OpenMeteo\Connectors\GeocodingConnector;
-use OpenMeteo\Enums\Geocoding\GeocodingLanguage;
-use OpenMeteo\Enums\HourlyVariable;
-use OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\Enums\HourlyVariable;
+use TempiMarathon\OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\OpenMeteo;
+
+$openMeteo = new OpenMeteo();
+
+$locations = $openMeteo->geocoding()->locations()->search('Berlin')->dto();
+
+$forecast = $openMeteo->forecast()->weather()->get(52.52, 13.41)
+    ->timezone(Timezone::EuropeAmsterdam)
+    ->hourly(HourlyVariable::Temperature2m, HourlyVariable::WeatherCode)
+    ->forecastDays(7)
+    ->dto();
+```
+
+### Connectors (direct Saloon access)
+
+```php
+use TempiMarathon\OpenMeteo\Connectors\ForecastConnector;
+use TempiMarathon\OpenMeteo\Connectors\GeocodingConnector;
+use TempiMarathon\OpenMeteo\Enums\Geocoding\GeocodingLanguage;
+use TempiMarathon\OpenMeteo\Enums\HourlyVariable;
+use TempiMarathon\OpenMeteo\Enums\Timezone;
 
 $geocoding = new GeocodingConnector();
 
 $locations = $geocoding->locations()->search('Berlin')
     ->count(5)
     ->language(GeocodingLanguage::English)
-    ->send()
     ->dto();
 
-$location = $geocoding->locations()->get(id: 2950159)->send()->dto();
-
 $forecast = new ForecastConnector();
-$data = $forecast->weather()->get(
-    latitude: 52.52,
-    longitude: 13.41,
-)->timezone(Timezone::EuropeAmsterdam)
+
+$data = $forecast->weather()->get(52.52, 13.41)
+    ->timezone(Timezone::EuropeAmsterdam)
     ->hourly(HourlyVariable::Temperature2m, HourlyVariable::WeatherCode)
     ->forecastDays(7)
-    ->send()
     ->dto();
 ```
 

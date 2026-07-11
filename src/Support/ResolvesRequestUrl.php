@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Support;
+namespace TempiMarathon\OpenMeteo\Support;
 
 use Saloon\Http\Connector;
 use Saloon\Http\Request;

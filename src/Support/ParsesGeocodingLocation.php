@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Support;
+namespace TempiMarathon\OpenMeteo\Support;
 
-use OpenMeteo\Data\GeocodingLocation;
-use OpenMeteo\Enums\CountryCode;
-use OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\Data\GeocodingLocation;
+use TempiMarathon\OpenMeteo\Enums\CountryCode;
+use TempiMarathon\OpenMeteo\Enums\Timezone;
 
 use function Psl\Type\float;
 use function Psl\Type\int;

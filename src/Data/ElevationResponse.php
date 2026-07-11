@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Data;
+namespace TempiMarathon\OpenMeteo\Data;
 
 final readonly class ElevationResponse
 {

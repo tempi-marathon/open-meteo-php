@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Exceptions;
+namespace TempiMarathon\OpenMeteo\Exceptions;
 
 use Exception;
 

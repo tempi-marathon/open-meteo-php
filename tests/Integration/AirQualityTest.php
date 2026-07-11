@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use OpenMeteo\Connectors\AirQualityConnector;
-use OpenMeteo\Data\ForecastResponse;
-use OpenMeteo\Data\ForecastUnits;
-use OpenMeteo\Enums\Timezone;
-use OpenMeteo\Requests\AirQuality\GetAirQualityRequest;
-use OpenMeteo\Resources\AirQualityResource;
 use Saloon\Http\Faking\MockClient;
+use TempiMarathon\OpenMeteo\Connectors\AirQualityConnector;
+use TempiMarathon\OpenMeteo\Data\ForecastResponse;
+use TempiMarathon\OpenMeteo\Data\ForecastUnits;
+use TempiMarathon\OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\Requests\AirQuality\GetAirQualityRequest;
+use TempiMarathon\OpenMeteo\Resources\AirQualityResource;
 
 covers(
     AirQualityConnector::class,
@@ -24,11 +24,10 @@ it('fetches air quality data', function (): void {
     ]);
 
     $connector = new AirQualityConnector;
-    $response = $connector->send(
-        $connector->airQuality()->get(52.37, 4.89)
-            ->timezone(Timezone::GMT)
-            ->between(new DateTimeImmutable('2026-07-01'), new DateTimeImmutable('2026-07-07')),
-    )->dto();
+    $response = $connector->airQuality()->get(52.37, 4.89)
+        ->timezone(Timezone::GMT)
+        ->between(new DateTimeImmutable('2026-07-01'), new DateTimeImmutable('2026-07-07'))
+        ->dto();
 
     expect($response->timezone)->toBe('Europe/Amsterdam');
 });

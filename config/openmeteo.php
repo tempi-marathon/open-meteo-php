@@ -15,6 +15,6 @@ return [
         'seasonal' => 'https://seasonal-api.open-meteo.com/v1/',
         'elevation' => 'https://api.open-meteo.com/v1/',
     ],
-    'apikey' => null,
-    'user_agent' => null,
+    'apikey' => ($value = getenv('OPENMETEO_API_KEY')) !== false && $value !== '' ? $value : null,
+    'user_agent' => ($value = getenv('OPENMETEO_USER_AGENT')) !== false && $value !== '' ? $value : null,
 ];

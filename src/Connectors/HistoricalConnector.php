@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Connectors;
+namespace TempiMarathon\OpenMeteo\Connectors;
 
-use OpenMeteo\Resources\HistoricalResource;
-use OpenMeteo\Support\OpenMeteoConfig;
+use TempiMarathon\OpenMeteo\Resources\HistoricalResource;
+use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 
 final class HistoricalConnector extends BaseConnector
 {

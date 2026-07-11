@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Resources;
+namespace TempiMarathon\OpenMeteo\Resources;
 
-use OpenMeteo\Contracts\ResolvesRequestUrl;
 use Saloon\Http\Connector;
 use Saloon\Http\Request;
+use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl;
 
 abstract class BaseResource
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenMeteo\Enums;
+namespace TempiMarathon\OpenMeteo\Enums;
 
 enum TimeFormat: string
 {
