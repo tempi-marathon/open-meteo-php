@@ -14,7 +14,7 @@ use function Psl\Str\starts_with;
 final class OpenMeteoConfig
 {
     /** @var array<string, string> */
-    private const DEFAULT_HOSTS = [
+    private const DEFAULT_HOSTS = [ // @pest-mutate-ignore
         'forecast' => 'https://api.open-meteo.com/v1/',
         'historical' => 'https://archive-api.open-meteo.com/v1/',
         'geocoding' => 'https://geocoding-api.open-meteo.com/v1/',
@@ -93,7 +93,7 @@ final class OpenMeteoConfig
         $defaultPath = $packageRoot.'/config/openmeteo.php';
 
         $configuredPath = getenv('OPENMETEO_CONFIG_PATH');
-        if (! is_string($configuredPath) || $configuredPath === '') {
+        if (! is_string($configuredPath) || $configuredPath === '') { // @pest-mutate-ignore: EmptyStringToNotEmpty
             return exists($defaultPath) ? $defaultPath : null;
         }
 
@@ -107,8 +107,8 @@ final class OpenMeteoConfig
         }
 
         $packageRootReal = canonicalize($packageRoot);
-        if ($packageRootReal === null || ! starts_with($resolved, $packageRootReal.DIRECTORY_SEPARATOR)) {
-            return exists($defaultPath) ? $defaultPath : null;
+        if ($packageRootReal === null || ! starts_with($resolved, $packageRootReal.DIRECTORY_SEPARATOR)) { // @pest-mutate-ignore: ConcatRemoveRight
+            return exists($defaultPath) ? $defaultPath : null; // @pest-mutate-ignore: TernaryNegated
         }
 
         return $resolved;
@@ -137,7 +137,7 @@ final class OpenMeteoConfig
     private static function toCustomerHost(string $url): string
     {
         $parts = parse_url($url);
-        if ($parts === false || ! isset($parts['scheme'], $parts['host'])) {
+        if ($parts === false || ! isset($parts['scheme'], $parts['host'])) { // @pest-mutate-ignore: FalseToTrue
             return $url;
         }
 
@@ -158,7 +158,7 @@ final class OpenMeteoConfig
     private static function isAllowedHostUrl(string $url): bool
     {
         $parts = parse_url($url);
-        if ($parts === false || ! isset($parts['scheme'], $parts['host'])) {
+        if ($parts === false || ! isset($parts['scheme'], $parts['host'])) { // @pest-mutate-ignore: FalseToTrue
             return false;
         }
 

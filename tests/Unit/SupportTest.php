@@ -24,6 +24,7 @@ use TempiMarathon\OpenMeteo\Support\ResolvesTypedDto;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
 use TempiMarathon\OpenMeteo\Tests\Support\InvalidResolvesRequestUrlUser;
 use TempiMarathon\OpenMeteo\Tests\Support\SlashEndpointRequest;
+use TempiMarathon\OpenMeteo\WindDirection;
 
 covers(
     BaseResource::class,
@@ -77,7 +78,7 @@ it('finds the closest hourly reading', function (): void {
             temperature2m: 16.0,
             apparentTemperature: 15.0,
             windSpeed10m: 3.0,
-            windDirection10m: 90,
+            windDirection10m: WindDirection::fromDegrees(90),
             precipitation: 0.0,
             isDay: true,
         ),
@@ -87,7 +88,7 @@ it('finds the closest hourly reading', function (): void {
             temperature2m: 18.0,
             apparentTemperature: 17.0,
             windSpeed10m: 5.0,
-            windDirection10m: 180,
+            windDirection10m: WindDirection::fromDegrees(180),
             precipitation: 1.0,
             isDay: true,
         ),
@@ -143,6 +144,21 @@ it('iterates forecast response collections', function (): void {
 
     expect($collection)->toBeInstanceOf(ForecastResponseCollection::class)
         ->and($collection->count())->toBe(1)
+        ->and($collection->first()?->latitude)->toBe(52.366);
+});
+
+it('treats payloads with a non-array zero index as a single forecast', function (): void {
+    MockClient::global([
+        GetForecastRequest::class => mockOk(array_replace(forecastPayload(), [
+            0 => 'not-an-array',
+        ])),
+    ]);
+
+    $connector = new ForecastConnector;
+    $request = $connector->weather()->get(52.37, 4.89);
+    $collection = $request->createDtoCollectionFromResponse($request->send());
+
+    expect($collection->count())->toBe(1)
         ->and($collection->first()?->latitude)->toBe(52.366);
 });
 

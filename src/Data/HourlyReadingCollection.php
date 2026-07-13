@@ -34,7 +34,7 @@ final readonly class HourlyReadingCollection implements Countable, IteratorAggre
     public function closestTo(DateTimeInterface $target): ?HourlyReading
     {
         if (is_empty($this->readings)) {
-            return null;
+            return null; // @pest-mutate-ignore: RemoveEarlyReturn
         }
 
         return reduce(

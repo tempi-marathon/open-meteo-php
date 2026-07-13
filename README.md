@@ -32,6 +32,20 @@ $forecast = (new OpenMeteo())
 
 No environment variables, configuration files, or Laravel setup needed.
 
+### Human-readable values
+
+`HourlyReading` exposes typed helpers for common display fields:
+
+```php
+$reading = $forecast->hourlyReadings()->closestTo(new DateTimeImmutable);
+
+$reading?->weatherCode?->label();        // "Partly cloudy"
+echo $reading?->windDirection10m;        // "NE" — Stringable compass label
+$reading?->windDirection10m?->getRaw();  // 45 — degrees when you need the number
+```
+
+For other direction fields in raw `$hourly` / `$daily` arrays, use `WindDirection::fromDegrees($degrees)`.
+
 ## Usage
 
 Chain request options on the fluent builder, then call `->dto()` for a typed response or `->send()` for the raw Saloon response.

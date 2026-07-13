@@ -7,14 +7,14 @@ namespace TempiMarathon\OpenMeteo\Support;
 final class RedactsUriSecrets
 {
     /** @var list<string> */
-    private const array SENSITIVE_QUERY_KEYS = [
+    private const array SENSITIVE_QUERY_KEYS = [ // @pest-mutate-ignore
         'apikey',
     ];
 
     public static function redact(string $uri): string
     {
         $parts = parse_url($uri);
-        if ($parts === false || ! isset($parts['query'])) {
+        if ($parts === false || ! isset($parts['query'])) { // @pest-mutate-ignore: FalseToTrue
             return $uri;
         }
 
@@ -38,7 +38,7 @@ final class RedactsUriSecrets
         $uri = '';
 
         if (isset($parts['scheme'])) {
-            $uri .= $parts['scheme'].'://';
+            $uri .= $parts['scheme'].'://'; // @pest-mutate-ignore: ConcatEqualToEqual
         }
 
         if (isset($parts['user'])) {

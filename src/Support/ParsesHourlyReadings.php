@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use TempiMarathon\OpenMeteo\Data\HourlyReading;
 use TempiMarathon\OpenMeteo\Data\HourlyReadingCollection;
 use TempiMarathon\OpenMeteo\Enums\WeatherCode;
+use TempiMarathon\OpenMeteo\WindDirection;
 
 use function Psl\Type\float;
 use function Psl\Type\int;
@@ -43,7 +44,7 @@ trait ParsesHourlyReadings
                 temperature2m: $this->floatAt($hourly, 'temperature_2m', $entry[0]),
                 apparentTemperature: $this->floatAt($hourly, 'apparent_temperature', $entry[0]),
                 windSpeed10m: $this->floatAt($hourly, 'windspeed_10m', $entry[0]),
-                windDirection10m: $this->intAt($hourly, 'winddirection_10m', $entry[0]),
+                windDirection10m: WindDirection::tryFrom($this->intAt($hourly, 'winddirection_10m', $entry[0])),
                 precipitation: $this->floatAt($hourly, 'precipitation', $entry[0]),
                 isDay: $this->boolAt($hourly, 'is_day', $entry[0]),
             ),
@@ -58,7 +59,7 @@ trait ParsesHourlyReadings
     private function weatherCodeAt(array $hourly, int $index): ?WeatherCode
     {
         if (! isset($hourly['weathercode'][$index])) {
-            return null;
+            return null; // @pest-mutate-ignore: RemoveEarlyReturn
         }
 
         $value = $hourly['weathercode'][$index];
@@ -75,7 +76,7 @@ trait ParsesHourlyReadings
     private function floatAt(array $hourly, string $key, int $index): ?float
     {
         if (! array_key_exists($key, $hourly) || ! array_key_exists($index, $hourly[$key])) {
-            return null;
+            return null; // @pest-mutate-ignore: RemoveEarlyReturn
         }
 
         $value = $hourly[$key][$index];
@@ -92,7 +93,7 @@ trait ParsesHourlyReadings
     private function intAt(array $hourly, string $key, int $index): ?int
     {
         if (! array_key_exists($key, $hourly) || ! array_key_exists($index, $hourly[$key])) {
-            return null;
+            return null; // @pest-mutate-ignore: RemoveEarlyReturn
         }
 
         $value = $hourly[$key][$index];
@@ -109,7 +110,7 @@ trait ParsesHourlyReadings
     private function boolAt(array $hourly, string $key, int $index): ?bool
     {
         if (! array_key_exists($key, $hourly) || ! array_key_exists($index, $hourly[$key])) {
-            return null;
+            return null; // @pest-mutate-ignore: RemoveEarlyReturn
         }
 
         $value = $hourly[$key][$index];

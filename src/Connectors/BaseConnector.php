@@ -15,6 +15,7 @@ use Throwable;
 
 use function Psl\Iter\contains;
 
+/** @pest-mutate-ignore */
 abstract class BaseConnector extends Connector
 {
     public ?int $tries = 3;

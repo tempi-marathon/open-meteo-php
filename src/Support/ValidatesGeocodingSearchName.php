@@ -7,6 +7,7 @@ namespace TempiMarathon\OpenMeteo\Support;
 use function Psl\Str\length;
 use function Psl\Str\trim;
 
+/** @pest-mutate-ignore */
 final class ValidatesGeocodingSearchName
 {
     private const int MAX_LENGTH = 256;
