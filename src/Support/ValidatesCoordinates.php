@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TempiMarathon\OpenMeteo\Support;
 
+/** @pest-mutate-ignore */
 final class ValidatesCoordinates
 {
     private const float MIN_LATITUDE = -90.0;

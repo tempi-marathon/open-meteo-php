@@ -60,7 +60,9 @@ it('fetches a forecast', function (): void {
         ->and($reading?->weatherCode)->toBe(WeatherCode::CLEAR)
         ->and($reading?->isDay)->toBeFalse()
         ->and($reading?->apparentTemperature)->toBe(21.9)
-        ->and($reading?->windDirection10m)->toBe(35)
+        ->and($reading?->windDirection10m?->getRaw())->toBe(35)
+        ->and($reading?->windDirection10m?->label())->toBe('NE')
+        ->and((string) $reading?->windDirection10m)->toBe('NE')
         ->and($reading?->precipitation)->toBe(0.0)
         ->and($forecast->units->hourlyUnits['temperature_2m'])->toBe('°C')
         ->and($forecast->units->dailyUnits['temperature_2m_max'])->toBe('°C');
@@ -210,7 +212,8 @@ it('normalizes modern hourly response keys', function (): void {
     $reading = $connector->weather()->get(52.37, 4.89)->dto()->hourlyReadings()->closestTo(new DateTimeImmutable('2026-07-06T12:00'));
 
     expect($reading?->windSpeed10m)->toBe(5.5)
-        ->and($reading?->windDirection10m)->toBe(90)
+        ->and($reading?->windDirection10m?->getRaw())->toBe(90)
+        ->and($reading?->windDirection10m?->label())->toBe('E')
         ->and($reading?->weatherCode)->toBe(WeatherCode::CLEAR)
         ->and($reading?->isDay)->toBeTrue();
 });
@@ -234,7 +237,8 @@ it('parses legacy hourly wind keys', function (): void {
         ->closestTo(new DateTimeImmutable('2026-07-06T12:00'));
 
     expect($reading?->windSpeed10m)->toBe(8.0)
-        ->and($reading?->windDirection10m)->toBe(180);
+        ->and($reading?->windDirection10m?->getRaw())->toBe(180)
+        ->and($reading?->windDirection10m?->label())->toBe('S');
 });
 
 it('returns null for completely absent optional hourly keys', function (): void {

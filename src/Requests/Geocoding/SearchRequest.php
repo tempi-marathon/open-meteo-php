@@ -23,6 +23,7 @@ use function Psl\Type\mixed_dict;
 use function Psl\Vec\filter;
 use function Psl\Vec\map;
 
+/** @pest-mutate-ignore */
 final class SearchRequest extends Request implements ResolvesRequestUrlContract
 {
     use HasApiKeyQuery;

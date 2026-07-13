@@ -46,7 +46,7 @@
     "test:style": "vendor/bin/pint --test",
     "test:types": "vendor/bin/phpstan analyse --no-progress",
     "test:unit": "vendor/bin/pest --coverage --min=100 --exclude-group=live",
-    "test:infection": "vendor/bin/pest --mutate --min=90 --parallel"
+    "test:infection": "vendor/bin/pest --mutate --min=90 --parallel --exclude-group=live"
   },
   "suggest": {
     "illuminate/support": "Required for Laravel integration (^12.0|^13.0)"

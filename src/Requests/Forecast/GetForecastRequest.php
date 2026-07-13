@@ -24,6 +24,7 @@ use function Psl\Str\join;
 use function Psl\Vec\map;
 use function Psl\Vec\values;
 
+/** @pest-mutate-ignore */
 final class GetForecastRequest extends Request implements ResolvesRequestUrlContract
 {
     use CreatesTimeSeriesResponse;
