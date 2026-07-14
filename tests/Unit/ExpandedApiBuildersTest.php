@@ -1,0 +1,265 @@
+<?php
+
+declare(strict_types=1);
+
+use TempiMarathon\OpenMeteo\Data\ClimateResponse;
+use TempiMarathon\OpenMeteo\Data\EnsembleUnits;
+use TempiMarathon\OpenMeteo\Enums\CellSelection;
+use TempiMarathon\OpenMeteo\Enums\ClimateDailyVariable;
+use TempiMarathon\OpenMeteo\Enums\EnsembleDailyVariable;
+use TempiMarathon\OpenMeteo\Enums\EnsembleHourlyVariable;
+use TempiMarathon\OpenMeteo\Enums\FloodDailyVariable;
+use TempiMarathon\OpenMeteo\Enums\LengthUnit;
+use TempiMarathon\OpenMeteo\Enums\MarineDailyVariable;
+use TempiMarathon\OpenMeteo\Enums\MarineHourlyVariable;
+use TempiMarathon\OpenMeteo\Enums\PrecipitationUnit;
+use TempiMarathon\OpenMeteo\Enums\SeasonalDailyVariable;
+use TempiMarathon\OpenMeteo\Enums\SeasonalHourlyVariable;
+use TempiMarathon\OpenMeteo\Enums\TemperatureUnit;
+use TempiMarathon\OpenMeteo\Enums\TimeFormat;
+use TempiMarathon\OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\Enums\WindSpeedUnit;
+use TempiMarathon\OpenMeteo\Exceptions\InvalidCoordinateException;
+use TempiMarathon\OpenMeteo\Exceptions\InvalidForecastParameterException;
+use TempiMarathon\OpenMeteo\Requests\AbstractCoordinateGetRequest;
+use TempiMarathon\OpenMeteo\Requests\AirQuality\GetAirQualityRequest;
+use TempiMarathon\OpenMeteo\Requests\Climate\GetClimateRequest;
+use TempiMarathon\OpenMeteo\Requests\Elevation\GetElevationRequest;
+use TempiMarathon\OpenMeteo\Requests\Ensemble\GetEnsembleRequest;
+use TempiMarathon\OpenMeteo\Requests\Flood\GetFloodRequest;
+use TempiMarathon\OpenMeteo\Requests\Forecast\GetForecastRequest;
+use TempiMarathon\OpenMeteo\Requests\Historical\GetArchiveRequest;
+use TempiMarathon\OpenMeteo\Requests\Marine\GetMarineRequest;
+use TempiMarathon\OpenMeteo\Requests\Seasonal\GetSeasonalRequest;
+use TempiMarathon\OpenMeteo\Support\ForecastWindowLimits;
+
+covers(
+    GetAirQualityRequest::class,
+    GetClimateRequest::class,
+    GetElevationRequest::class,
+    GetEnsembleRequest::class,
+    GetFloodRequest::class,
+    GetForecastRequest::class,
+    GetMarineRequest::class,
+    GetSeasonalRequest::class,
+    GetArchiveRequest::class,
+    AbstractCoordinateGetRequest::class,
+    EnsembleUnits::class,
+    ForecastWindowLimits::class,
+);
+
+it('builds marine weather query options', function (): void {
+    $request = GetMarineRequest::forCoordinates(52.37, 4.89)
+        ->hourly(MarineHourlyVariable::WaveHeight)
+        ->daily(MarineDailyVariable::WaveHeightMax)
+        ->timezone(Timezone::EuropeAmsterdam)
+        ->between(new DateTimeImmutable('2024-06-01'), new DateTimeImmutable('2024-06-15'))
+        ->forecastDays(7)
+        ->pastDays(1)
+        ->lengthUnit(LengthUnit::Metric)
+        ->temperatureUnit(TemperatureUnit::Celsius)
+        ->windSpeedUnit(WindSpeedUnit::Ms)
+        ->timeFormat(TimeFormat::Unixtime)
+        ->cellSelection(CellSelection::Sea)
+        ->models('best_match')
+        ->withQueryParam('custom', 'value');
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['hourly'])->toBe('wave_height')
+        ->and($query['daily'])->toBe('wave_height_max')
+        ->and($query['timezone'])->toBe('Europe/Amsterdam')
+        ->and($query['forecast_days'])->toBe('7')
+        ->and($query['past_days'])->toBe('1')
+        ->and($query['length_unit'])->toBe('metric')
+        ->and($query['temperature_unit'])->toBe('celsius')
+        ->and($query['wind_speed_unit'])->toBe('ms')
+        ->and($query['timeformat'])->toBe('unixtime')
+        ->and($query['cell_selection'])->toBe('sea')
+        ->and($query['models'])->toBe('best_match')
+        ->and($query['custom'])->toBe('value');
+});
+
+it('builds climate and flood daily queries', function (): void {
+    $climate = GetClimateRequest::forCoordinates(52.37, 4.89)
+        ->daily(ClimateDailyVariable::Temperature2mMax)
+        ->precipitationUnit(PrecipitationUnit::Inch);
+    $flood = GetFloodRequest::forCoordinates(52.37, 4.89)
+        ->daily(FloodDailyVariable::RiverDischarge)
+        ->forecastDays(92)
+        ->ensemble(true);
+
+    $climateQuery = (new ReflectionClass($climate))->getMethod('defaultQuery')->invoke($climate);
+    $floodQuery = (new ReflectionClass($flood))->getMethod('defaultQuery')->invoke($flood);
+
+    expect($climateQuery['daily'])->toBe('temperature_2m_max')
+        ->and($climateQuery['precipitation_unit'])->toBe('inch')
+        ->and($floodQuery['daily'])->toBe('river_discharge')
+        ->and($floodQuery['forecast_days'])->toBe('92')
+        ->and($floodQuery['ensemble'])->toBe('true');
+});
+
+it('builds ensemble and seasonal interval queries', function (): void {
+    $ensemble = GetEnsembleRequest::forCoordinates(52.37, 4.89)
+        ->hourly(EnsembleHourlyVariable::Temperature2m)
+        ->daily(EnsembleDailyVariable::Temperature2mMax)
+        ->forecastHours(24);
+    $seasonal = GetSeasonalRequest::forCoordinates(52.37, 4.89)
+        ->hourly(SeasonalHourlyVariable::Temperature2m)
+        ->daily(SeasonalDailyVariable::Temperature2mMax)
+        ->forecastDays(183);
+
+    $ensembleQuery = (new ReflectionClass($ensemble))->getMethod('defaultQuery')->invoke($ensemble);
+    $seasonalQuery = (new ReflectionClass($seasonal))->getMethod('defaultQuery')->invoke($seasonal);
+
+    expect($ensembleQuery['hourly'])->toBe('temperature_2m')
+        ->and($ensembleQuery['daily'])->toBe('temperature_2m_max')
+        ->and($ensembleQuery['forecast_hours'])->toBe('24')
+        ->and($seasonalQuery['hourly'])->toBe('temperature_2m')
+        ->and($seasonalQuery['daily'])->toBe('temperature_2m_max')
+        ->and($seasonalQuery['forecast_days'])->toBe('183');
+});
+
+it('builds forecast weather query options', function (): void {
+    $request = GetForecastRequest::forCoordinates(52.37, 4.89)
+        ->elevation(11.0)
+        ->timeFormat(TimeFormat::Iso8601)
+        ->withQueryParam('tilt', 30);
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['elevation'])->toBe('11')
+        ->and($query['timeformat'])->toBe('iso8601')
+        ->and($query['tilt'])->toBe('30');
+});
+
+it('builds air quality forecast window options', function (): void {
+    $request = GetAirQualityRequest::forCoordinates(52.37, 4.89)
+        ->forecastDays(5)
+        ->pastDays(2);
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['forecast_days'])->toBe('5')
+        ->and($query['past_days'])->toBe('2');
+});
+
+it('builds batch elevation queries', function (): void {
+    $request = GetElevationRequest::forPoints([
+        [52.37, 4.89],
+        [48.13, 11.58],
+    ]);
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['latitude'])->toBe('52.37,48.13')
+        ->and($query['longitude'])->toBe('4.89,11.58');
+});
+
+it('rejects empty elevation point lists', function (): void {
+    expect(fn () => GetElevationRequest::forPoints([]))
+        ->toThrow(InvalidCoordinateException::class, 'At least one coordinate pair is required.');
+});
+
+it('rejects unsupported forecast window options on climate requests', function (): void {
+    expect(fn () => GetClimateRequest::forCoordinates(52.37, 4.89)->forecastDays(1))
+        ->toThrow(InvalidForecastParameterException::class, 'forecast_days is not supported');
+});
+
+it('rejects flood ensemble false query building edge case', function (): void {
+    $request = GetFloodRequest::forCoordinates(52.37, 4.89)->ensemble(false);
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['ensemble'])->toBe('false');
+});
+
+it('covers abstract coordinate default query', function (): void {
+    $request = new class(52.37, 4.89) extends AbstractCoordinateGetRequest
+    {
+        protected function responseClass(): string
+        {
+            return ClimateResponse::class;
+        }
+
+        public function resolveEndpoint(): string
+        {
+            return 'climate';
+        }
+    };
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['latitude'])->toBe('52.37')
+        ->and($query['longitude'])->toBe('4.89');
+});
+
+it('covers remaining forecast window ranges and validation', function (): void {
+    $ensemble = GetEnsembleRequest::forCoordinates(52.37, 4.89)
+        ->forecastDays(7)
+        ->pastDays(1);
+    $flood = GetFloodRequest::forCoordinates(52.37, 4.89)->pastDays(1);
+    $seasonal = GetSeasonalRequest::forCoordinates(52.37, 4.89)->pastDays(1);
+    $archive = GetArchiveRequest::forCoordinates(52.37, 4.89)
+        ->forecastDays(0)
+        ->pastDays(1);
+
+    expect((new ReflectionClass($ensemble))->getMethod('defaultQuery')->invoke($ensemble))
+        ->toHaveKeys(['forecast_days', 'past_days'])
+        ->and((new ReflectionClass($flood))->getMethod('defaultQuery')->invoke($flood)['past_days'])->toBe('1')
+        ->and((new ReflectionClass($seasonal))->getMethod('defaultQuery')->invoke($seasonal)['past_days'])->toBe('1')
+        ->and((new ReflectionClass($archive))->getMethod('defaultQuery')->invoke($archive))
+        ->toMatchArray(['forecast_days' => '0', 'past_days' => '1']);
+
+    expect(fn () => GetClimateRequest::forCoordinates(52.37, 4.89)->pastDays(1))
+        ->toThrow(InvalidForecastParameterException::class, 'past_days is not supported')
+        ->and(fn () => GetMarineRequest::forCoordinates(52.37, 4.89)->forecastHours(1))
+        ->toThrow(InvalidForecastParameterException::class, 'forecast_hours is not supported')
+        ->and(fn () => GetEnsembleRequest::forCoordinates(52.37, 4.89)->forecastDays(ForecastWindowLimits::ENSEMBLE_FORECAST_DAYS_MAX + 1))
+        ->toThrow(InvalidForecastParameterException::class, 'forecast_days must be between 0 and 36')
+        ->and(fn () => GetFloodRequest::forCoordinates(52.37, 4.89)->pastDays(ForecastWindowLimits::PAST_DAYS_MAX + 1))
+        ->toThrow(InvalidForecastParameterException::class, 'past_days must be between 0 and 92');
+});
+
+it('rejects malformed elevation point pairs', function (): void {
+    expect(fn () => GetElevationRequest::forPoints([[52.37]]))
+        ->toThrow(InvalidCoordinateException::class, 'Each coordinate pair must contain latitude and longitude.');
+});
+
+it('resolves ensemble units', function (): void {
+    $units = new EnsembleUnits(
+        hourlyUnits: ['temperature_2m' => '°C'],
+        dailyUnits: ['temperature_2m_max' => '°C'],
+    );
+
+    expect($units->hourlyUnit('temperature_2m'))->toBe('°C')
+        ->and($units->dailyUnit('temperature_2m_max'))->toBe('°C')
+        ->and($units->dailyUnit('missing'))->toBeNull();
+});
+
+it('defaults flood ensemble to true', function (): void {
+    $query = invokeDefaultQuery(GetFloodRequest::forCoordinates(52.37, 4.89)->ensemble());
+
+    expect($query['ensemble'])->toBe('true');
+});
+
+it('stringifies elevation coordinates for batch lookups', function (): void {
+    $query = invokeDefaultQuery(GetElevationRequest::forPoints([[52.5, 13.4]]));
+
+    expect($query['latitude'])->toBe('52.5')
+        ->and($query['longitude'])->toBe('13.4');
+});
+
+it('omits unset interval parameters from thin endpoint queries', function (): void {
+    $marine = invokeDefaultQuery(GetMarineRequest::forCoordinates(52.37, 4.89));
+    $climate = invokeDefaultQuery(GetClimateRequest::forCoordinates(52.37, 4.89));
+    $flood = invokeDefaultQuery(GetFloodRequest::forCoordinates(52.37, 4.89));
+    $ensemble = invokeDefaultQuery(GetEnsembleRequest::forCoordinates(52.37, 4.89));
+    $seasonal = invokeDefaultQuery(GetSeasonalRequest::forCoordinates(52.37, 4.89));
+
+    expect($marine)->not->toHaveKeys(['hourly', 'daily', 'current', 'minutely_15'])
+        ->and($climate)->not->toHaveKey('daily')
+        ->and($flood)->not->toHaveKeys(['daily', 'ensemble'])
+        ->and($ensemble)->not->toHaveKeys(['hourly', 'daily'])
+        ->and($seasonal)->not->toHaveKeys(['hourly', 'daily', 'monthly'])
+        ->and($marine['latitude'])->toBe('52.37');
+});
+
+function invokeDefaultQuery(object $request): array
+{
+    return (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+}
