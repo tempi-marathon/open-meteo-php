@@ -12,4 +12,12 @@ final class ForecastResource extends BaseResource
     {
         return GetForecastRequest::forCoordinates($latitude, $longitude)->using($this->connector);
     }
+
+    /**
+     * @param  list<array{0: float, 1: float}>  $points
+     */
+    public function forPoints(array $points): GetForecastRequest
+    {
+        return GetForecastRequest::forPoints($points)->using($this->connector);
+    }
 }

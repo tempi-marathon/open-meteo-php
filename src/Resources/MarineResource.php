@@ -12,4 +12,12 @@ final class MarineResource extends BaseResource
     {
         return GetMarineRequest::forCoordinates($latitude, $longitude)->using($this->connector);
     }
+
+    /**
+     * @param  list<array{0: float, 1: float}>  $points
+     */
+    public function forPoints(array $points): GetMarineRequest
+    {
+        return GetMarineRequest::forPoints($points)->using($this->connector);
+    }
 }

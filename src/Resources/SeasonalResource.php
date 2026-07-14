@@ -12,4 +12,12 @@ final class SeasonalResource extends BaseResource
     {
         return GetSeasonalRequest::forCoordinates($latitude, $longitude)->using($this->connector);
     }
+
+    /**
+     * @param  list<array{0: float, 1: float}>  $points
+     */
+    public function forPoints(array $points): GetSeasonalRequest
+    {
+        return GetSeasonalRequest::forPoints($points)->using($this->connector);
+    }
 }

@@ -36,7 +36,9 @@
       "@php scripts/generate-hourly-daily-enums.php",
       "@php scripts/generate-timezones.php",
       "@php scripts/generate-country-codes.php",
-      "@php scripts/generate-air-quality-enum.php"
+      "@php scripts/generate-air-quality-enum.php",
+      "@php scripts/generate-endpoint-enums.php",
+      "@php scripts/generate-models-enums.php"
     ],
     "test": [
       "@test:style",

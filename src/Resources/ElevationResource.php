@@ -12,4 +12,12 @@ final class ElevationResource extends BaseResource
     {
         return GetElevationRequest::forCoordinates($latitude, $longitude)->using($this->connector);
     }
+
+    /**
+     * @param  list<array{0: float, 1: float}>  $points
+     */
+    public function forPoints(array $points): GetElevationRequest
+    {
+        return GetElevationRequest::forPoints($points)->using($this->connector);
+    }
 }

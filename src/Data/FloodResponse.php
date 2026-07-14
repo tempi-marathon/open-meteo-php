@@ -4,4 +4,20 @@ declare(strict_types=1);
 
 namespace TempiMarathon\OpenMeteo\Data;
 
-final readonly class FloodResponse extends TimeSeriesResponse {}
+use TempiMarathon\OpenMeteo\Contracts\CoordinateResponse;
+use TempiMarathon\OpenMeteo\Contracts\HasDaily;
+use TempiMarathon\OpenMeteo\Support\ProvidesDailySeries;
+
+final readonly class FloodResponse implements CoordinateResponse, HasDaily
+{
+    use ProvidesDailySeries;
+
+    public function __construct(
+        public float $latitude,
+        public float $longitude,
+        public string $timezone,
+        public CoordinateMetadata $metadata,
+        private DailySeries $daily,
+        public DailyUnits $units,
+    ) {}
+}

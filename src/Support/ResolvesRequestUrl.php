@@ -6,13 +6,14 @@ namespace TempiMarathon\OpenMeteo\Support;
 
 use Saloon\Http\Connector;
 use Saloon\Http\Request;
+use TempiMarathon\OpenMeteo\Exceptions\ResolvesRequestUrlMisuseException;
 
 trait ResolvesRequestUrl
 {
     public function resolveRequestUrl(Connector $connector): string
     {
         if (! $this instanceof Request) {
-            throw new \LogicException('ResolvesRequestUrl can only be used on Saloon requests.');
+            throw new ResolvesRequestUrlMisuseException;
         }
 
         return rtrim($connector->resolveBaseUrl(), '/').'/'.ltrim($this->resolveEndpoint(), '/');

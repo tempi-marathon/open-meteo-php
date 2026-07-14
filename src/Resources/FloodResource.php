@@ -12,4 +12,12 @@ final class FloodResource extends BaseResource
     {
         return GetFloodRequest::forCoordinates($latitude, $longitude)->using($this->connector);
     }
+
+    /**
+     * @param  list<array{0: float, 1: float}>  $points
+     */
+    public function forPoints(array $points): GetFloodRequest
+    {
+        return GetFloodRequest::forPoints($points)->using($this->connector);
+    }
 }

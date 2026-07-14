@@ -363,5 +363,4 @@ enum HourlyVariable: string
     case GeopotentialHeight100hPa = 'geopotential_height_100hPa';
     case GeopotentialHeight50hPa = 'geopotential_height_50hPa';
     case GeopotentialHeight10hPa = 'geopotential_height_10hPa';
-    case NameDaily = 'name: daily';
 }

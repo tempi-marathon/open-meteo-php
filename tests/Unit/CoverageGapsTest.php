@@ -11,10 +11,13 @@ use TempiMarathon\OpenMeteo\Connectors\MarineConnector;
 use TempiMarathon\OpenMeteo\Data\ForecastResponse;
 use TempiMarathon\OpenMeteo\Data\ForecastResponseCollection;
 use TempiMarathon\OpenMeteo\Data\GeocodingLocationCollection;
-use TempiMarathon\OpenMeteo\Data\HourlyReadingCollection;
-use TempiMarathon\OpenMeteo\Enums\DailyVariable;
+use TempiMarathon\OpenMeteo\Data\HourlySeries;
+use TempiMarathon\OpenMeteo\Enums\HistoricalDailyVariable;
 use TempiMarathon\OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\Exceptions\InvalidCoordinateException;
+use TempiMarathon\OpenMeteo\Exceptions\InvalidForecastSegmentException;
 use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoRequestException;
+use TempiMarathon\OpenMeteo\Exceptions\UnexpectedDtoException;
 use TempiMarathon\OpenMeteo\Requests\AbstractCoordinateGetRequest;
 use TempiMarathon\OpenMeteo\Requests\Forecast\GetForecastRequest;
 use TempiMarathon\OpenMeteo\Requests\Geocoding\GetRequest;
@@ -27,7 +30,7 @@ use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 covers(
     AbstractCoordinateGetRequest::class,
     BaseResource::class,
-    HourlyReadingCollection::class,
+    HourlySeries::class,
     ForecastResponseCollection::class,
     GeocodingLocationCollection::class,
     GetArchiveRequest::class,
@@ -67,7 +70,8 @@ it('skips invalid geocoding search results', function (): void {
 
 it('covers historical daily query building', function (): void {
     $request = GetArchiveRequest::forCoordinates(52.37, 4.89)
-        ->daily(DailyVariable::Temperature2mMax);
+        ->daily(HistoricalDailyVariable::Temperature2mMax)
+        ->between(new DateTimeImmutable('2024-06-01'), new DateTimeImmutable('2024-06-15'));
     $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
 
     expect($query['daily'])->toBe('temperature_2m_max');
@@ -155,7 +159,7 @@ it('throws when multi-location forecast payload contains invalid segment', funct
     );
 
     expect(fn () => $request->createDtoCollectionFromResponse($response))
-        ->toThrow(UnexpectedValueException::class, 'Expected forecast segment to be an array.');
+        ->toThrow(InvalidForecastSegmentException::class, 'Expected forecast segment to be an array.');
 });
 
 it('builds coordinate query for abstract requests', function (): void {
@@ -177,7 +181,7 @@ it('includes api key in abstract coordinate request queries', function (): void 
 
 it('validates coordinates on abstract coordinate requests', function (): void {
     expect(fn () => GetMarineRequest::forCoordinates(91.0, 4.89))
-        ->toThrow(InvalidArgumentException::class, 'latitude must be between');
+        ->toThrow(InvalidCoordinateException::class, 'latitude must be between');
 });
 
 it('throws when marine request resolves the wrong dto type', function (): void {
@@ -190,7 +194,7 @@ it('throws when marine request resolves the wrong dto type', function (): void {
     $method->setAccessible(true);
 
     expect(fn () => $method->invoke($request, ForecastResponse::class))
-        ->toThrow(LogicException::class, 'Expected TempiMarathon\OpenMeteo\Data\ForecastResponse DTO.');
+        ->toThrow(UnexpectedDtoException::class, 'Expected TempiMarathon\OpenMeteo\Data\ForecastResponse DTO.');
 });
 
 it('falls back to gmt for unknown geocoding timezones', function (): void {
@@ -242,5 +246,5 @@ it('parses minimal geocoding location payloads', function (): void {
 });
 
 it('returns null when closest reading target is queried on an empty collection', function (): void {
-    expect((new HourlyReadingCollection([]))->closestTo(new DateTimeImmutable))->toBeNull();
+    expect((new HourlySeries([]))->closestTo(new DateTimeImmutable))->toBeNull();
 });

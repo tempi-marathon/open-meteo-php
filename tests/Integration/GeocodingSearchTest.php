@@ -10,6 +10,8 @@ use TempiMarathon\OpenMeteo\Enums\CountryCode;
 use TempiMarathon\OpenMeteo\Enums\Geocoding\GeocodingFormat;
 use TempiMarathon\OpenMeteo\Enums\Geocoding\GeocodingLanguage;
 use TempiMarathon\OpenMeteo\Enums\Timezone;
+use TempiMarathon\OpenMeteo\Exceptions\InvalidGeocodingCountException;
+use TempiMarathon\OpenMeteo\Exceptions\InvalidGeocodingSearchException;
 use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoRequestException;
 use TempiMarathon\OpenMeteo\Requests\Geocoding\GetRequest;
 use TempiMarathon\OpenMeteo\Requests\Geocoding\SearchRequest;
@@ -162,9 +164,9 @@ it('uses default search count when not configured', function (): void {
 
 it('validates count range', function (): void {
     expect(fn () => (new GeocodingConnector)->locations()->search('Amsterdam')->count(0))
-        ->toThrow(InvalidArgumentException::class, 'count must be between 1 and 100')
+        ->toThrow(InvalidGeocodingCountException::class, 'count must be between 1 and 100')
         ->and(fn () => (new GeocodingConnector)->locations()->search('Amsterdam')->count(101))
-        ->toThrow(InvalidArgumentException::class, 'count must be between 1 and 100');
+        ->toThrow(InvalidGeocodingCountException::class, 'count must be between 1 and 100');
 });
 
 it('accepts search count boundaries', function (): void {
@@ -191,7 +193,7 @@ it('returns empty collection when results are missing', function (): void {
 
 it('validates search name', function (): void {
     expect(fn () => (new GeocodingConnector)->locations()->search(''))
-        ->toThrow(InvalidArgumentException::class, 'name must not be empty');
+        ->toThrow(InvalidGeocodingSearchException::class, 'name must not be empty');
 });
 
 it('throws open meteo request exception on api errors', function (): void {

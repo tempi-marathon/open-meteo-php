@@ -52,5 +52,4 @@ enum AirQualityHourlyVariable: string
     case UsAqiOzone = 'us_aqi_ozone';
     case UsAqiSulphurDioxide = 'us_aqi_sulphur_dioxide';
     case IsDay = 'is_day';
-    case NameCurrent = 'name: current';
 }

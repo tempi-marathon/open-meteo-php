@@ -4,85 +4,82 @@ declare(strict_types=1);
 
 namespace TempiMarathon\OpenMeteo\Requests\Historical;
 
-use DateTimeInterface;
-use Saloon\Enums\Method;
-use Saloon\Http\Request;
 use Saloon\Http\Response;
-use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
 use TempiMarathon\OpenMeteo\Data\HistoricalResponse;
-use TempiMarathon\OpenMeteo\Enums\DailyVariable;
-use TempiMarathon\OpenMeteo\Enums\HourlyVariable;
-use TempiMarathon\OpenMeteo\Enums\Timezone;
-use TempiMarathon\OpenMeteo\Support\CreatesTimeSeriesResponse;
-use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
-use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
-use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
-use TempiMarathon\OpenMeteo\Support\ValidatesCoordinates;
+use TempiMarathon\OpenMeteo\Data\HistoricalResponseCollection;
+use TempiMarathon\OpenMeteo\Enums\HistoricalDailyVariable;
+use TempiMarathon\OpenMeteo\Enums\HistoricalHourlyVariable;
+use TempiMarathon\OpenMeteo\Requests\AbstractCoordinateGetRequest;
+use TempiMarathon\OpenMeteo\Support\BuildsSolarIrradianceOptions;
+use TempiMarathon\OpenMeteo\Support\ForecastWindowLimits;
+use TempiMarathon\OpenMeteo\Support\JoinsQueryEnumValues;
 
-use function Psl\Str\join;
-use function Psl\Vec\map;
 use function Psl\Vec\values;
 
-final class GetArchiveRequest extends Request implements ResolvesRequestUrlContract
+final class GetArchiveRequest extends AbstractCoordinateGetRequest
 {
-    use CreatesTimeSeriesResponse;
-    use HasApiKeyQuery;
-    use ResolvesRequestUrl;
-    use SendsThroughConnector;
+    use BuildsSolarIrradianceOptions;
+    use JoinsQueryEnumValues;
 
-    protected Method $method = Method::GET;
-
-    /** @var list<HourlyVariable> */
+    /** @var list<HistoricalHourlyVariable> */
     private array $hourly = [];
 
-    /** @var list<DailyVariable> */
+    /** @var list<HistoricalDailyVariable> */
     private array $daily = [];
 
-    private ?DateTimeInterface $startDate = null;
-
-    private ?DateTimeInterface $endDate = null;
-
-    private Timezone $timezone = Timezone::GMT;
-
-    private function __construct(
-        private readonly float $latitude,
-        private readonly float $longitude,
-    ) {}
-
-    public static function forCoordinates(float $latitude, float $longitude): self
-    {
-        ValidatesCoordinates::assert($latitude, $longitude);
-
-        return new self($latitude, $longitude);
-    }
-
-    public function hourly(HourlyVariable ...$variables): static
+    public function hourly(HistoricalHourlyVariable ...$variables): static
     {
         return clone ($this, [
             'hourly' => values($variables),
         ]);
     }
 
-    public function daily(DailyVariable ...$variables): static
+    public function daily(HistoricalDailyVariable ...$variables): static
     {
         return clone ($this, [
             'daily' => values($variables),
         ]);
     }
 
-    public function between(DateTimeInterface $start, DateTimeInterface $end): static
+    protected function requiresDateRange(): bool
     {
-        return clone ($this, [
-            'startDate' => $start,
-            'endDate' => $end,
-        ]);
+        return true;
     }
 
-    public function timezone(Timezone $timezone): static
+    protected function supportedForecastDaysRange(): array
     {
-        return clone ($this, [
-            'timezone' => $timezone,
-        ]);
+        return [ForecastWindowLimits::FORECAST_DAYS_MIN, ForecastWindowLimits::ARCHIVE_FORECAST_DAYS_MAX];
+    }
+
+    protected function supportedPastDaysRange(): array
+    {
+        return [ForecastWindowLimits::PAST_DAYS_MIN, ForecastWindowLimits::PAST_DAYS_MAX];
+    }
+
+    protected function supportsPastHours(): bool
+    {
+        return true;
+    }
+
+    protected function supportedForecastHoursRange(): array
+    {
+        return [ForecastWindowLimits::FORECAST_HOURS_MIN, ForecastWindowLimits::FORECAST_HOURS_MAX];
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function weatherQueryOptionKeys(): array
+    {
+        return [
+            'temperature_unit',
+            'wind_speed_unit',
+            'precipitation_unit',
+            'timeformat',
+            'cell_selection',
+            'elevation',
+            'models',
+        ];
     }
 
     public function resolveEndpoint(): string
@@ -90,39 +87,38 @@ final class GetArchiveRequest extends Request implements ResolvesRequestUrlContr
         return 'archive';
     }
 
+    protected function responseClass(): string
+    {
+        return HistoricalResponse::class;
+    }
+
     protected function defaultQuery(): array
     {
-        $query = [
-            'latitude' => (string) $this->latitude,
-            'longitude' => (string) $this->longitude,
-            'timezone' => $this->timezone->value,
-        ];
-
-        if ($this->startDate !== null) {
-            $query['start_date'] = $this->startDate->format('Y-m-d');
-        }
-
-        if ($this->endDate !== null) {
-            $query['end_date'] = $this->endDate->format('Y-m-d');
-        }
+        $query = $this->withSolarIrradianceQuery($this->coordinateWeatherQuery());
 
         if ($this->hourly !== []) {
-            $query['hourly'] = join(map($this->hourly, static fn (HourlyVariable $v): string => $v->value), ',');
+            $query['hourly'] = $this->joinEnumValues($this->hourly);
         }
 
         if ($this->daily !== []) {
-            $query['daily'] = join(map($this->daily, static fn (DailyVariable $v): string => $v->value), ',');
+            $query['daily'] = $this->joinEnumValues($this->daily);
         }
 
         return $this->withApiKey($query);
     }
 
-    public function createDtoFromResponse(Response $response): HistoricalResponse
+    public function createDtoCollectionFromResponse(Response $response): HistoricalResponseCollection
     {
         /** @var array<string, mixed> $data */
         $data = $response->json();
 
-        return $this->createTimeSeriesResponseFromPayload($data, HistoricalResponse::class);
+        /** @var HistoricalResponseCollection */
+        return $this->createResponseCollectionFromPayload($data, HistoricalResponse::class);
+    }
+
+    public function dtoCollection(): HistoricalResponseCollection
+    {
+        return $this->createDtoCollectionFromResponse($this->send());
     }
 
     public function dto(): HistoricalResponse

@@ -12,4 +12,12 @@ final class HistoricalResource extends BaseResource
     {
         return GetArchiveRequest::forCoordinates($latitude, $longitude)->using($this->connector);
     }
+
+    /**
+     * @param  list<array{0: float, 1: float}>  $points
+     */
+    public function forPoints(array $points): GetArchiveRequest
+    {
+        return GetArchiveRequest::forPoints($points)->using($this->connector);
+    }
 }

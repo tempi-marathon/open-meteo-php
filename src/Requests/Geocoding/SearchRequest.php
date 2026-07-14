@@ -13,6 +13,7 @@ use TempiMarathon\OpenMeteo\Data\GeocodingLocationCollection;
 use TempiMarathon\OpenMeteo\Enums\CountryCode;
 use TempiMarathon\OpenMeteo\Enums\Geocoding\GeocodingFormat;
 use TempiMarathon\OpenMeteo\Enums\Geocoding\GeocodingLanguage;
+use TempiMarathon\OpenMeteo\Exceptions\InvalidGeocodingCountException;
 use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
 use TempiMarathon\OpenMeteo\Support\ParsesGeocodingLocation;
 use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
@@ -78,7 +79,7 @@ final class SearchRequest extends Request implements ResolvesRequestUrlContract
     public function count(int $count): static
     {
         if ($count < self::MIN_COUNT || $count > self::MAX_COUNT) {
-            throw new \InvalidArgumentException(
+            throw new InvalidGeocodingCountException(
                 sprintf('count must be between %d and %d, %d given.', self::MIN_COUNT, self::MAX_COUNT, $count),
             );
         }

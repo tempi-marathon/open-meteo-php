@@ -6,24 +6,34 @@ use Psl\Type\Exception\CoercionException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\PendingRequest;
 use Saloon\Http\Response;
+use TempiMarathon\OpenMeteo\Connectors\AirQualityConnector;
 use TempiMarathon\OpenMeteo\Connectors\ClimateConnector;
 use TempiMarathon\OpenMeteo\Connectors\ElevationConnector;
 use TempiMarathon\OpenMeteo\Connectors\EnsembleConnector;
 use TempiMarathon\OpenMeteo\Connectors\FloodConnector;
+use TempiMarathon\OpenMeteo\Connectors\ForecastConnector;
 use TempiMarathon\OpenMeteo\Connectors\MarineConnector;
 use TempiMarathon\OpenMeteo\Connectors\SeasonalConnector;
+use TempiMarathon\OpenMeteo\Data\AirQualityResponse;
 use TempiMarathon\OpenMeteo\Data\ClimateResponse;
 use TempiMarathon\OpenMeteo\Data\ElevationResponse;
 use TempiMarathon\OpenMeteo\Data\EnsembleResponse;
 use TempiMarathon\OpenMeteo\Data\FloodResponse;
 use TempiMarathon\OpenMeteo\Data\MarineResponse;
 use TempiMarathon\OpenMeteo\Data\SeasonalResponse;
+use TempiMarathon\OpenMeteo\Enums\MarineCurrentVariable;
+use TempiMarathon\OpenMeteo\Enums\MarineMinutely15Variable;
+use TempiMarathon\OpenMeteo\Enums\MonthlyVariable;
+use TempiMarathon\OpenMeteo\Exceptions\InvalidCoordinateException;
+use TempiMarathon\OpenMeteo\Requests\AirQuality\GetAirQualityRequest;
 use TempiMarathon\OpenMeteo\Requests\Climate\GetClimateRequest;
 use TempiMarathon\OpenMeteo\Requests\Elevation\GetElevationRequest;
 use TempiMarathon\OpenMeteo\Requests\Ensemble\GetEnsembleRequest;
 use TempiMarathon\OpenMeteo\Requests\Flood\GetFloodRequest;
+use TempiMarathon\OpenMeteo\Requests\Forecast\GetForecastRequest;
 use TempiMarathon\OpenMeteo\Requests\Marine\GetMarineRequest;
 use TempiMarathon\OpenMeteo\Requests\Seasonal\GetSeasonalRequest;
+use TempiMarathon\OpenMeteo\Resources\AirQualityResource;
 use TempiMarathon\OpenMeteo\Resources\ClimateResource;
 use TempiMarathon\OpenMeteo\Resources\ElevationResource;
 use TempiMarathon\OpenMeteo\Resources\EnsembleResource;
@@ -32,6 +42,10 @@ use TempiMarathon\OpenMeteo\Resources\MarineResource;
 use TempiMarathon\OpenMeteo\Resources\SeasonalResource;
 
 covers(
+    AirQualityConnector::class,
+    AirQualityResource::class,
+    GetAirQualityRequest::class,
+    AirQualityResponse::class,
     MarineConnector::class,
     MarineResource::class,
     GetMarineRequest::class,
@@ -69,20 +83,83 @@ it('fetches marine data', function (): void {
         ->and($response->longitude)->toBe(4.8750153)
         ->and($response->timezone)->toBe('Europe/Amsterdam')
         ->and($response->units->hourlyUnits['wave_height'])->toBe('m')
-        ->and($response->hourly)->toHaveKey('wave_height');
+        ->and($response->hourly()->at(0)?->get('wave_height'))->toBeNull();
+});
+
+it('builds marine current and minutely 15 query parameters', function (): void {
+    $request = GetMarineRequest::forCoordinates(52.37, 4.89)
+        ->current(MarineCurrentVariable::WaveHeight)
+        ->minutely15(MarineMinutely15Variable::SeaLevelHeightMsl);
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['current'])->toBe('wave_height')
+        ->and($query['minutely_15'])->toBe('sea_level_height_msl');
+});
+
+it('builds batch elevation requests from the resource', function (): void {
+    $connector = new ElevationConnector;
+    $request = $connector->elevation()->forPoints([[52.5, 13.4]]);
+
+    expect($request)->toBeInstanceOf(GetElevationRequest::class);
+});
+
+it('builds batch forecast requests from the resource', function (): void {
+    $connector = new ForecastConnector;
+    $request = $connector->weather()->forPoints([[52.5, 13.4], [48.1, 11.6]]);
+
+    expect($request)->toBeInstanceOf(GetForecastRequest::class);
+});
+
+it('builds batch ensemble requests from the resource', function (): void {
+    $connector = new EnsembleConnector;
+    $request = $connector->ensemble()->forPoints([[52.5, 13.4]]);
+
+    expect($request)->toBeInstanceOf(GetEnsembleRequest::class);
+});
+
+it('builds batch marine requests from the resource', function (): void {
+    $request = (new MarineConnector)->marine()->forPoints([[52.5, 13.4]]);
+
+    expect($request)->toBeInstanceOf(GetMarineRequest::class);
+});
+
+it('builds batch air quality requests from the resource', function (): void {
+    $request = (new AirQualityConnector)->airQuality()->forPoints([[52.5, 13.4]]);
+
+    expect($request)->toBeInstanceOf(GetAirQualityRequest::class);
+});
+
+it('builds batch climate requests from the resource', function (): void {
+    $request = (new ClimateConnector)->climate()->forPoints([[52.5, 13.4]]);
+
+    expect($request)->toBeInstanceOf(GetClimateRequest::class);
+});
+
+it('builds batch flood requests from the resource', function (): void {
+    $request = (new FloodConnector)->flood()->forPoints([[52.5, 13.4]]);
+
+    expect($request)->toBeInstanceOf(GetFloodRequest::class);
+});
+
+it('builds batch seasonal requests from the resource', function (): void {
+    $request = (new SeasonalConnector)->seasonal()->forPoints([[52.5, 13.4]]);
+
+    expect($request)->toBeInstanceOf(GetSeasonalRequest::class);
 });
 
 it('fetches climate data', function (): void {
     MockClient::global([GetClimateRequest::class => mockOk(climatePayload())]);
     $connector = new ClimateConnector;
 
-    $response = $connector->climate()->get(52.37, 4.89)->dto();
+    $response = $connector->climate()->get(52.37, 4.89)
+        ->between(new DateTimeImmutable('2024-06-01'), new DateTimeImmutable('2024-06-15'))
+        ->dto();
 
     expect($response)->toBeInstanceOf(ClimateResponse::class)
         ->and($response->longitude)->toBe(4.900009)
         ->and($response->timezone)->toBe('GMT')
         ->and($response->units->dailyUnits['temperature_2m_max'])->toBe('°C')
-        ->and($response->daily)->toHaveKey('temperature_2m_max');
+        ->and($response->daily()->at(0)?->get('temperature_2m_max'))->toBe(11.1);
 });
 
 it('fetches flood data', function (): void {
@@ -95,7 +172,7 @@ it('fetches flood data', function (): void {
         ->and($response->longitude)->toBe(4.8750153)
         ->and($response->timezone)->toBe('GMT')
         ->and($response->units->dailyUnits['river_discharge'])->toBe('m³/s')
-        ->and($response->daily)->toHaveKey('river_discharge');
+        ->and($response->daily()->at(0)?->get('river_discharge'))->toBe(0.03);
 });
 
 it('fetches ensemble data', function (): void {
@@ -108,7 +185,7 @@ it('fetches ensemble data', function (): void {
         ->and($response->longitude)->toBe(5.0)
         ->and($response->timezone)->toBe('Europe/Amsterdam')
         ->and($response->units->hourlyUnits['temperature_2m'])->toBe('°C')
-        ->and($response->hourly)->toHaveKey('temperature_2m');
+        ->and($response->hourly()->at(0)?->get('temperature_2m'))->toBe(18.9);
 });
 
 it('fetches seasonal data', function (): void {
@@ -121,7 +198,17 @@ it('fetches seasonal data', function (): void {
         ->and($response->longitude)->toBe(4.5652175)
         ->and($response->timezone)->toBe('GMT')
         ->and($response->units->dailyUnits['temperature_2m_max'])->toBe('°C')
-        ->and($response->daily)->toHaveKey('temperature_2m_max');
+        ->and($response->daily()->at(0)?->get('temperature_2m_max'))->toBe(23.9);
+});
+
+it('parses seasonal monthly readings', function (): void {
+    MockClient::global([GetSeasonalRequest::class => mockOk(seasonalPayload())]);
+    $connector = new SeasonalConnector;
+
+    $request = $connector->seasonal()->get(52.37, 4.89)->monthly(MonthlyVariable::Temperature2mMean);
+    $query = (new ReflectionClass($request))->getMethod('defaultQuery')->invoke($request);
+
+    expect($query['monthly'])->toBe('temperature_2m_mean');
 });
 
 it('fetches elevation data', function (): void {
@@ -162,5 +249,5 @@ it('builds elevation query from coordinates', function (): void {
 
 it('validates coordinates on elevation requests', function (): void {
     expect(fn () => GetElevationRequest::forCoordinates(0.0, 181.0))
-        ->toThrow(InvalidArgumentException::class, 'longitude must be between');
+        ->toThrow(InvalidCoordinateException::class, 'longitude must be between');
 });

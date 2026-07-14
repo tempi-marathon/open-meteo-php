@@ -34,17 +34,26 @@ No environment variables, configuration files, or Laravel setup needed.
 
 ### Human-readable values
 
-`HourlyReading` exposes typed helpers for common display fields:
+Time-series data is exposed as typed `SeriesPoint` objects inside interval series — not raw arrays:
 
 ```php
-$reading = $forecast->hourlyReadings()->closestTo(new DateTimeImmutable);
+$point = $forecast->hourly()->at(0);
+// or: foreach ($forecast->hourly() as $point) { ... }
+// or: $forecast->hourly()->closestTo(new DateTimeImmutable('2026-07-11T12:00'));
 
-$reading?->weatherCode?->label();        // "Partly cloudy"
-echo $reading?->windDirection10m;        // "NE" — Stringable compass label
-$reading?->windDirection10m?->getRaw();  // 45 — degrees when you need the number
+$point?->get('temperature_2m');                // 21.2
+$point?->get('weathercode')?->label();        // "Partly cloudy"
+echo $point?->get('wind_direction_80m');       // "SW" — Stringable compass label
+$point?->get('wind_direction_80m')?->getRaw();  // 225 — degrees when you need the number
+
+$forecast->daily()->at(0)?->get('temperature_2m_max');
+$forecast->minutely15()->at(0)?->get('temperature_2m');
+$forecast->current()->first()?->get('wind_direction_10m')?->label(); // current snapshot
 ```
 
-For other direction fields in raw `$hourly` / `$daily` arrays, use `WindDirection::fromDegrees($degrees)`.
+Each response type exposes only the intervals its API supports — for example `AirQualityResponse` implements `HasHourly` and `HasCurrent`, while `ForecastResponse` adds `HasDaily` and `HasMinutely15`. Use `instanceof HasDaily` when writing generic code.
+
+Absolute direction fields (wind, wave, swell, ocean current, and similar) are parsed into `WindDirection` automatically. Anomaly fields such as `wind_direction_10m_anomaly` stay as numeric values.
 
 ## Usage
 
@@ -109,6 +118,14 @@ Use `debugUrl()` on a resource to inspect the request URL during development. It
 | `ensemble()` | Ensemble forecast | [Ensemble API](https://open-meteo.com/en/docs/ensemble-api) |
 | `seasonal()` | Seasonal forecast | [Seasonal Forecast API](https://open-meteo.com/en/docs/seasonal-forecast-api) |
 | `elevation()` | Elevation | [Elevation API](https://open-meteo.com/en/docs/elevation-api) |
+
+All coordinate-based APIs share fluent builders for `timezone()`, `between()`, unit options (`temperatureUnit()`, `windSpeedUnit()`, `precipitationUnit()`, `timeFormat()`, `cellSelection()`, `models()`, `elevation()`), and `withQueryParam()` for escape-hatch parameters. Forecast-window options (`forecastDays()`, `pastDays()`, `forecastHours()`, `pastHours()`) are validated per endpoint.
+
+Climate and historical requests require `between($start, $end)` before sending. Seasonal supports `weekly()` in addition to hourly, daily, and monthly intervals. Air quality accepts `domains()`. Climate accepts `disableBiasCorrection()`. Ensemble accepts `temporalResolution()`. Forecast, historical, and ensemble support solar irradiance options via `tilt()` and `azimuth()`.
+
+Each API uses endpoint-specific variable enums generated from the OpenAPI specs (for example `MarineHourlyVariable`, `HistoricalDailyVariable`, `EnsembleHourlyVariable`, `ForecastCurrentVariable`, `AirQualityCurrentVariable`). Weather model IDs are typed per endpoint (`ForecastModel`, `HistoricalModel`, etc.) and passed to `models()`. Responses expose root metadata (`elevation`, `generationtime_ms`, `utc_offset_seconds`, `timezone_abbreviation`) on `$response->metadata`.
+
+All coordinate resources support batch lookups via `forPoints()`. Single-coordinate responses use `->dto()`; multi-coordinate responses use `->dtoCollection()`, which returns a typed collection per endpoint (for example `ForecastResponseCollection`, `HistoricalResponseCollection`).
 
 ## Optional configuration
 

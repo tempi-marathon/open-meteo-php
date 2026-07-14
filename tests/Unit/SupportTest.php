@@ -9,11 +9,12 @@ use TempiMarathon\OpenMeteo\Connectors\ForecastConnector;
 use TempiMarathon\OpenMeteo\Connectors\GeocodingConnector;
 use TempiMarathon\OpenMeteo\Data\ForecastResponseCollection;
 use TempiMarathon\OpenMeteo\Data\GeocodingLocationCollection;
-use TempiMarathon\OpenMeteo\Data\HourlyReading;
-use TempiMarathon\OpenMeteo\Data\HourlyReadingCollection;
 use TempiMarathon\OpenMeteo\Data\MarineResponse;
-use TempiMarathon\OpenMeteo\Enums\WeatherCode;
+use TempiMarathon\OpenMeteo\Exceptions\ConnectorNotConfiguredException;
+use TempiMarathon\OpenMeteo\Exceptions\DebugUrlNotSupportedException;
 use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoRequestException;
+use TempiMarathon\OpenMeteo\Exceptions\ResolvesRequestUrlMisuseException;
+use TempiMarathon\OpenMeteo\Exceptions\UnexpectedDtoException;
 use TempiMarathon\OpenMeteo\Requests\Forecast\GetForecastRequest;
 use TempiMarathon\OpenMeteo\Requests\Geocoding\SearchRequest;
 use TempiMarathon\OpenMeteo\Resources\BaseResource;
@@ -24,14 +25,11 @@ use TempiMarathon\OpenMeteo\Support\ResolvesTypedDto;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
 use TempiMarathon\OpenMeteo\Tests\Support\InvalidResolvesRequestUrlUser;
 use TempiMarathon\OpenMeteo\Tests\Support\SlashEndpointRequest;
-use TempiMarathon\OpenMeteo\WindDirection;
 
 covers(
     BaseResource::class,
     OpenMeteoConfig::class,
     OpenMeteoRequestException::class,
-    HourlyReadingCollection::class,
-    HourlyReading::class,
     ForecastResponseCollection::class,
     GeocodingLocationCollection::class,
     ForecastResource::class,
@@ -68,69 +66,6 @@ it('exposes open meteo request exception details', function (): void {
     expect($exception->reason())->toBe('Bad request')
         ->and($exception->statusCode())->toBe(400)
         ->and($exception->getMessage())->toBe('Bad request');
-});
-
-it('finds the closest hourly reading', function (): void {
-    $readings = new HourlyReadingCollection([
-        new HourlyReading(
-            datetime: new DateTimeImmutable('2026-07-06T10:00'),
-            weatherCode: WeatherCode::CLEAR,
-            temperature2m: 16.0,
-            apparentTemperature: 15.0,
-            windSpeed10m: 3.0,
-            windDirection10m: WindDirection::fromDegrees(90),
-            precipitation: 0.0,
-            isDay: true,
-        ),
-        new HourlyReading(
-            datetime: new DateTimeImmutable('2026-07-06T12:00'),
-            weatherCode: WeatherCode::RAIN,
-            temperature2m: 18.0,
-            apparentTemperature: 17.0,
-            windSpeed10m: 5.0,
-            windDirection10m: WindDirection::fromDegrees(180),
-            precipitation: 1.0,
-            isDay: true,
-        ),
-    ]);
-
-    $closest = $readings->closestTo(new DateTimeImmutable('2026-07-06T11:30'));
-
-    expect($closest?->weatherCode)->toBe(WeatherCode::RAIN)
-        ->and($readings->closestTo(new DateTimeImmutable('2026-07-06T10:15'))?->weatherCode)->toBe(WeatherCode::CLEAR)
-        ->and($readings->count())->toBe(2)
-        ->and(iterator_to_array($readings))->toHaveCount(2);
-});
-
-it('returns null for empty reading collections', function (): void {
-    expect((new HourlyReadingCollection([]))->closestTo(new DateTimeImmutable))->toBeNull();
-});
-
-it('prefers the first reading when distances are equal', function (): void {
-    $readings = new HourlyReadingCollection([
-        new HourlyReading(
-            datetime: new DateTimeImmutable('2026-07-06T10:00'),
-            weatherCode: WeatherCode::CLEAR,
-            temperature2m: 16.0,
-            apparentTemperature: null,
-            windSpeed10m: null,
-            windDirection10m: null,
-            precipitation: null,
-            isDay: null,
-        ),
-        new HourlyReading(
-            datetime: new DateTimeImmutable('2026-07-06T14:00'),
-            weatherCode: WeatherCode::RAIN,
-            temperature2m: 18.0,
-            apparentTemperature: null,
-            windSpeed10m: null,
-            windDirection10m: null,
-            precipitation: null,
-            isDay: null,
-        ),
-    ]);
-
-    expect($readings->closestTo(new DateTimeImmutable('2026-07-06T12:00'))?->weatherCode)->toBe(WeatherCode::CLEAR);
 });
 
 it('iterates forecast response collections', function (): void {
@@ -186,7 +121,7 @@ it('rejects debug urls for unsupported requests', function (): void {
         }
     };
 
-    expect(fn () => $resource->debugUrl($request))->toThrow(LogicException::class);
+    expect(fn () => $resource->debugUrl($request))->toThrow(DebugUrlNotSupportedException::class);
 });
 
 it('resolves request urls from traits', function (): void {
@@ -206,12 +141,12 @@ it('normalizes leading slashes in request endpoints', function (): void {
 it('throws when resolving request url on invalid object', function (): void {
     $invalid = new InvalidResolvesRequestUrlUser;
 
-    expect(fn () => $invalid->resolveRequestUrl(new ForecastConnector))->toThrow(LogicException::class);
+    expect(fn () => $invalid->resolveRequestUrl(new ForecastConnector))->toThrow(ResolvesRequestUrlMisuseException::class);
 });
 
 it('requires a connector before sending', function (): void {
     expect(fn () => GetForecastRequest::forCoordinates(52.37, 4.89)->send())
-        ->toThrow(LogicException::class, 'No connector set');
+        ->toThrow(ConnectorNotConfiguredException::class, 'No connector set');
 });
 
 it('throws when typed dto resolution receives the wrong response type', function (): void {
@@ -224,7 +159,7 @@ it('throws when typed dto resolution receives the wrong response type', function
     $method->setAccessible(true);
 
     expect(fn () => $method->invoke($request, MarineResponse::class))
-        ->toThrow(LogicException::class, 'Expected TempiMarathon\OpenMeteo\Data\MarineResponse DTO.');
+        ->toThrow(UnexpectedDtoException::class, 'Expected TempiMarathon\OpenMeteo\Data\MarineResponse DTO.');
 });
 
 it('allows attaching a connector with using', function (): void {

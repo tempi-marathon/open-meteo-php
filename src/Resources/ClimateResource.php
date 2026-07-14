@@ -12,4 +12,12 @@ final class ClimateResource extends BaseResource
     {
         return GetClimateRequest::forCoordinates($latitude, $longitude)->using($this->connector);
     }
+
+    /**
+     * @param  list<array{0: float, 1: float}>  $points
+     */
+    public function forPoints(array $points): GetClimateRequest
+    {
+        return GetClimateRequest::forPoints($points)->using($this->connector);
+    }
 }
