@@ -14,6 +14,8 @@ trait BuildsForecastWindowQuery
 
     private ?int $forecastHours = null;
 
+    private ?int $pastHours = null;
+
     /**
      * @return array{0: int, 1: int}|null
      */
@@ -34,6 +36,19 @@ trait BuildsForecastWindowQuery
      * @return array{0: int, 1: int}|null
      */
     protected function supportedForecastHoursRange(): ?array
+    {
+        return null;
+    }
+
+    protected function supportsPastHours(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @return array{0: int, 1: int}|null
+     */
+    protected function supportedPastHoursRange(): ?array
     {
         return null;
     }
@@ -95,6 +110,25 @@ trait BuildsForecastWindowQuery
         ]);
     }
 
+    public function pastHours(int $pastHours): static
+    {
+        if (! $this->supportsPastHours()) {
+            throw new InvalidForecastParameterException('past_hours is not supported for this endpoint.');
+        }
+
+        $range = $this->supportedPastHoursRange();
+
+        if ($range !== null && ($pastHours < $range[0] || $pastHours > $range[1])) {
+            throw new InvalidForecastParameterException(
+                sprintf('past_hours must be between %d and %d, %d given.', $range[0], $range[1], $pastHours),
+            );
+        }
+
+        return clone ($this, [
+            'pastHours' => $pastHours,
+        ]);
+    }
+
     /**
      * @param  array<string, string>  $query
      * @return array<string, string>
@@ -111,6 +145,10 @@ trait BuildsForecastWindowQuery
 
         if ($this->forecastHours !== null) {
             $query['forecast_hours'] = (string) $this->forecastHours;
+        }
+
+        if ($this->pastHours !== null) {
+            $query['past_hours'] = (string) $this->pastHours;
         }
 
         return $query;

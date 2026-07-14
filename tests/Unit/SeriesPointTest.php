@@ -26,6 +26,16 @@ it('reads values by enum, api key, and legacy aliases', function (): void {
         ->and($reading->get('wind_direction_10m')?->label())->toBe('NE');
 });
 
+it('stores an optional interval on series points', function (): void {
+    $point = new SeriesPoint(
+        datetime: new DateTimeImmutable('2026-07-11T12:00'),
+        values: ['temperature_2m' => 21.5],
+        interval: 900,
+    );
+
+    expect($point->interval)->toBe(900);
+});
+
 it('returns null for absent values', function (): void {
     $reading = new SeriesPoint(
         datetime: new DateTimeImmutable('2026-07-11T00:00'),

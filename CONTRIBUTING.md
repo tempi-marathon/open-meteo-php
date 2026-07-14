@@ -27,12 +27,14 @@ Enums are regenerated from pinned OpenAPI specs:
 composer generate
 ```
 
-This runs four scripts:
+This runs five scripts:
 
-- `scripts/generate-hourly-daily-enums.php` — forecast hourly and daily variables
+- `scripts/generate-hourly-daily-enums.php` — forecast hourly, daily, current, and minutely 15 variables
 - `scripts/generate-timezones.php` — timezone enum
 - `scripts/generate-country-codes.php` — country code enum
-- `scripts/generate-air-quality-enum.php` — air quality hourly variables
+- `scripts/generate-air-quality-enum.php` — air quality hourly and current variables
+- `scripts/generate-endpoint-enums.php` — endpoint-specific variable enums (marine, historical, climate, flood, ensemble, seasonal including weekly and monthly)
+- `scripts/generate-models-enums.php` — per-endpoint weather model enums (forecast, historical, marine, climate, flood, ensemble, seasonal)
 
 ### Workflow
 

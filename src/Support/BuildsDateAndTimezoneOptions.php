@@ -31,12 +31,16 @@ trait BuildsDateAndTimezoneOptions
     }
 
     /**
+     * @param  array<string, string>  $query
      * @return array<string, string>
      */
-    protected function withDateAndTimezoneQuery(float $latitude, float $longitude): array
+    protected function withDateAndTimezoneQuery(array $query): array
     {
         return $this->withDateRange(
-            $this->coordinateQueryWithTimezone($latitude, $longitude, $this->timezone),
+            [
+                ...$query,
+                'timezone' => $this->timezone->value,
+            ],
             $this->startDate,
             $this->endDate,
         );

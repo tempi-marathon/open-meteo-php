@@ -12,6 +12,10 @@ it('returns null for null values', function (): void {
     expect(CoercesVariableValues::coerce('temperature_2m', null))->toBeNull();
 });
 
+it('returns null for null is_day values without coercing', function (): void {
+    expect(CoercesVariableValues::coerce('is_day', null))->toBeNull();
+});
+
 it('returns already coerced value objects unchanged', function (): void {
     $direction = WindDirection::fromDegrees(90);
     $weatherCode = WeatherCode::CLEAR;

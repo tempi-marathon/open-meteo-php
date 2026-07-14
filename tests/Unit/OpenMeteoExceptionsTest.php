@@ -11,10 +11,12 @@ use TempiMarathon\OpenMeteo\Exceptions\InvalidForecastSegmentException;
 use TempiMarathon\OpenMeteo\Exceptions\InvalidGeocodingCountException;
 use TempiMarathon\OpenMeteo\Exceptions\InvalidGeocodingSearchException;
 use TempiMarathon\OpenMeteo\Exceptions\MissingCurrentTimeException;
+use TempiMarathon\OpenMeteo\Exceptions\MissingDateRangeException;
 use TempiMarathon\OpenMeteo\Exceptions\MissingSeriesTimeException;
+use TempiMarathon\OpenMeteo\Exceptions\MultiCoordinateResponseException;
 use TempiMarathon\OpenMeteo\Exceptions\ResolvesRequestUrlMisuseException;
-use TempiMarathon\OpenMeteo\Exceptions\UnsupportedResponseClassException;
 use TempiMarathon\OpenMeteo\Exceptions\UnexpectedDtoException;
+use TempiMarathon\OpenMeteo\Exceptions\UnsupportedResponseClassException;
 
 covers(
     ConnectorNotConfiguredException::class,
@@ -24,6 +26,8 @@ covers(
     InvalidForecastSegmentException::class,
     InvalidGeocodingCountException::class,
     InvalidGeocodingSearchException::class,
+    MissingDateRangeException::class,
+    MultiCoordinateResponseException::class,
     MissingCurrentTimeException::class,
     MissingSeriesTimeException::class,
     ResolvesRequestUrlMisuseException::class,
@@ -43,6 +47,7 @@ it('exposes stable messages for parameterless sdk exceptions', function (string 
     'missing series time' => [MissingSeriesTimeException::class, 'Series data must contain a time array.'],
     'missing current time' => [MissingCurrentTimeException::class, 'Current data must contain a time value.'],
     'invalid forecast segment' => [InvalidForecastSegmentException::class, 'Expected forecast segment to be an array.'],
+    'multi coordinate response' => [MultiCoordinateResponseException::class, 'Multi-coordinate response received. Use createDtoCollectionFromResponse() or dtoCollection() instead.'],
 ]);
 
 it('formats unsupported response class exceptions', function (): void {
@@ -66,5 +71,7 @@ it('accepts custom invalid argument messages', function (): void {
         ->and(new InvalidGeocodingCountException('count must be between 1 and 100, 0 given.')->getMessage())
         ->toBe('count must be between 1 and 100, 0 given.')
         ->and(new InvalidForecastParameterException('forecast_days must be between 0 and 16, 17 given.')->getMessage())
-        ->toBe('forecast_days must be between 0 and 16, 17 given.');
+        ->toBe('forecast_days must be between 0 and 16, 17 given.')
+        ->and(new MissingDateRangeException('start_date and end_date are required for this endpoint.')->getMessage())
+        ->toBe('start_date and end_date are required for this endpoint.');
 });

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use TempiMarathon\OpenMeteo\Contracts\CoordinateResponse;
+use TempiMarathon\OpenMeteo\Data\ForecastResponse;
+use TempiMarathon\OpenMeteo\Support\CreatesTimeSeriesResponse;
 use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 
 uses()->beforeEach(function (): void {
@@ -122,6 +125,27 @@ function geocodingGetPayload(): array
 function mockOk(array $body): MockResponse
 {
     return MockResponse::make($body, 200);
+}
+
+/**
+ * @template T of \TempiMarathon\OpenMeteo\Contracts\CoordinateResponse
+ *
+ * @param  array<string, mixed>  $payload
+ * @param  class-string<T>  $responseClass
+ * @return T
+ */
+function timeSeriesResponseFromPayload(array $payload, string $responseClass = ForecastResponse::class): CoordinateResponse
+{
+    return (new class
+    {
+        use CreatesTimeSeriesResponse;
+
+        /** @param class-string<CoordinateResponse> $responseClass */
+        public function make(array $payload, string $responseClass): CoordinateResponse
+        {
+            return $this->createTimeSeriesResponseFromPayload($payload, $responseClass);
+        }
+    })->make($payload, $responseClass);
 }
 
 function mockError(string $reason, int $status = 400): MockResponse

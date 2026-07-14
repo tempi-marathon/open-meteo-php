@@ -13,11 +13,13 @@ final readonly class MarineUnits
 
     /**
      * @param  array<string, string>  $hourlyUnits
+     * @param  array<string, string>  $dailyUnits
      * @param  array<string, string>  $currentUnits
      * @param  array<string, string>  $minutely15Units
      */
     public function __construct(
         public array $hourlyUnits = [],
+        public array $dailyUnits = [],
         public array $currentUnits = [],
         public array $minutely15Units = [],
     ) {}
@@ -25,6 +27,11 @@ final readonly class MarineUnits
     public function hourlyUnit(BackedEnum|string $variable): ?string
     {
         return self::unitFrom($this->hourlyUnits, $variable);
+    }
+
+    public function dailyUnit(BackedEnum|string $variable): ?string
+    {
+        return self::unitFrom($this->dailyUnits, $variable);
     }
 
     public function currentUnit(BackedEnum|string $variable): ?string

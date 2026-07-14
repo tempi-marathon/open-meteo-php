@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace TempiMarathon\OpenMeteo\Support;
 
+use TempiMarathon\OpenMeteo\Exceptions\UnexpectedDtoException;
+
 trait ResolvesTypedDto
 {
     /**
@@ -17,7 +19,7 @@ trait ResolvesTypedDto
         $dto = $this->send()->dtoOrFail();
 
         if (! $dto instanceof $responseClass) {
-            throw new \LogicException(sprintf('Expected %s DTO.', $responseClass));
+            throw new UnexpectedDtoException($responseClass);
         }
 
         return $dto;

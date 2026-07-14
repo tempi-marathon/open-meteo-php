@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TempiMarathon\OpenMeteo\Support;
 
+use BackedEnum;
 use TempiMarathon\OpenMeteo\Enums\CellSelection;
 use TempiMarathon\OpenMeteo\Enums\PrecipitationUnit;
 use TempiMarathon\OpenMeteo\Enums\TemperatureUnit;
@@ -71,11 +72,30 @@ trait BuildsWeatherQueryOptions
         ]);
     }
 
-    public function models(string ...$models): static
+    public function models(BackedEnum|string ...$models): static
     {
         return clone ($this, [
-            'models' => array_values($models),
+            'models' => array_map(
+                static fn (BackedEnum|string $model): string => $model instanceof BackedEnum ? (string) $model->value : $model,
+                array_values($models),
+            ),
         ]);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function weatherQueryOptionKeys(): array
+    {
+        return [
+            'temperature_unit',
+            'wind_speed_unit',
+            'precipitation_unit',
+            'timeformat',
+            'cell_selection',
+            'elevation',
+            'models',
+        ];
     }
 
     /**
@@ -84,31 +104,33 @@ trait BuildsWeatherQueryOptions
      */
     protected function withWeatherQueryOptions(array $query): array
     {
-        if ($this->temperatureUnit !== null) {
+        $allowed = array_flip($this->weatherQueryOptionKeys());
+
+        if (isset($allowed['temperature_unit']) && $this->temperatureUnit !== null) {
             $query['temperature_unit'] = $this->temperatureUnit->value;
         }
 
-        if ($this->windSpeedUnit !== null) {
+        if (isset($allowed['wind_speed_unit']) && $this->windSpeedUnit !== null) {
             $query['wind_speed_unit'] = $this->windSpeedUnit->value;
         }
 
-        if ($this->precipitationUnit !== null) {
+        if (isset($allowed['precipitation_unit']) && $this->precipitationUnit !== null) {
             $query['precipitation_unit'] = $this->precipitationUnit->value;
         }
 
-        if ($this->timeFormat !== null) {
+        if (isset($allowed['timeformat']) && $this->timeFormat !== null) {
             $query['timeformat'] = $this->timeFormat->value;
         }
 
-        if ($this->cellSelection !== null) {
+        if (isset($allowed['cell_selection']) && $this->cellSelection !== null) {
             $query['cell_selection'] = $this->cellSelection->value;
         }
 
-        if ($this->elevation !== null) {
+        if (isset($allowed['elevation']) && $this->elevation !== null) {
             $query['elevation'] = (string) $this->elevation;
         }
 
-        if ($this->models !== []) {
+        if (isset($allowed['models']) && $this->models !== []) {
             $query['models'] = join($this->models, ',');
         }
 

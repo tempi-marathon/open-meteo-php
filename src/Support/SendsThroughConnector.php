@@ -6,6 +6,7 @@ namespace TempiMarathon\OpenMeteo\Support;
 
 use Saloon\Http\Connector;
 use Saloon\Http\Response;
+use TempiMarathon\OpenMeteo\Exceptions\ConnectorNotConfiguredException;
 
 trait SendsThroughConnector
 {
@@ -23,7 +24,7 @@ trait SendsThroughConnector
     public function send(): Response
     {
         if ($this->connector === null) {
-            throw new \LogicException('No connector set. Build the request from a resource, or call ->using($connector) before ->send().');
+            throw new ConnectorNotConfiguredException;
         }
 
         return $this->connector->send($this);

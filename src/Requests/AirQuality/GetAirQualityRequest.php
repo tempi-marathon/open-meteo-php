@@ -4,68 +4,29 @@ declare(strict_types=1);
 
 namespace TempiMarathon\OpenMeteo\Requests\AirQuality;
 
-use DateTimeInterface;
-use Saloon\Enums\Method;
-use Saloon\Http\Request;
 use Saloon\Http\Response;
-use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
 use TempiMarathon\OpenMeteo\Data\AirQualityResponse;
+use TempiMarathon\OpenMeteo\Data\AirQualityResponseCollection;
+use TempiMarathon\OpenMeteo\Enums\AirQualityCurrentVariable;
+use TempiMarathon\OpenMeteo\Enums\AirQualityDomain;
 use TempiMarathon\OpenMeteo\Enums\AirQualityHourlyVariable;
-use TempiMarathon\OpenMeteo\Enums\Timezone;
-use TempiMarathon\OpenMeteo\Support\CreatesTimeSeriesResponse;
-use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
-use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
-use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
-use TempiMarathon\OpenMeteo\Support\ValidatesCoordinates;
+use TempiMarathon\OpenMeteo\Requests\AbstractCoordinateGetRequest;
+use TempiMarathon\OpenMeteo\Support\ForecastWindowLimits;
+use TempiMarathon\OpenMeteo\Support\JoinsQueryEnumValues;
 
-use function Psl\Str\join;
-use function Psl\Vec\map;
 use function Psl\Vec\values;
 
-final class GetAirQualityRequest extends Request implements ResolvesRequestUrlContract
+final class GetAirQualityRequest extends AbstractCoordinateGetRequest
 {
-    use CreatesTimeSeriesResponse;
-    use HasApiKeyQuery;
-    use ResolvesRequestUrl;
-    use SendsThroughConnector;
-
-    protected Method $method = Method::GET;
-
-    private ?DateTimeInterface $startDate = null;
-
-    private ?DateTimeInterface $endDate = null;
-
-    private Timezone $timezone = Timezone::GMT;
+    use JoinsQueryEnumValues;
 
     /** @var list<AirQualityHourlyVariable> */
     private array $hourly = [];
 
-    private function __construct(
-        private readonly float $latitude,
-        private readonly float $longitude,
-    ) {}
+    /** @var list<AirQualityCurrentVariable> */
+    private array $current = [];
 
-    public static function forCoordinates(float $latitude, float $longitude): self
-    {
-        ValidatesCoordinates::assert($latitude, $longitude);
-
-        return new self($latitude, $longitude);
-    }
-
-    public function between(DateTimeInterface $start, DateTimeInterface $end): static
-    {
-        return clone ($this, [
-            'startDate' => $start,
-            'endDate' => $end,
-        ]);
-    }
-
-    public function timezone(Timezone $timezone): static
-    {
-        return clone ($this, [
-            'timezone' => $timezone,
-        ]);
-    }
+    private ?AirQualityDomain $domains = null;
 
     public function hourly(AirQualityHourlyVariable ...$variables): static
     {
@@ -74,40 +35,79 @@ final class GetAirQualityRequest extends Request implements ResolvesRequestUrlCo
         ]);
     }
 
+    public function current(AirQualityCurrentVariable ...$variables): static
+    {
+        return clone ($this, [
+            'current' => values($variables),
+        ]);
+    }
+
+    public function domains(AirQualityDomain $domains): static
+    {
+        return clone ($this, [
+            'domains' => $domains,
+        ]);
+    }
+
+    protected function supportedForecastDaysRange(): array
+    {
+        return [ForecastWindowLimits::FORECAST_DAYS_MIN, ForecastWindowLimits::AIR_QUALITY_FORECAST_DAYS_MAX];
+    }
+
+    protected function supportedPastDaysRange(): array
+    {
+        return [ForecastWindowLimits::PAST_DAYS_MIN, ForecastWindowLimits::PAST_DAYS_MAX];
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function weatherQueryOptionKeys(): array
+    {
+        return ['timeformat'];
+    }
+
     public function resolveEndpoint(): string
     {
         return 'air-quality';
     }
 
+    protected function responseClass(): string
+    {
+        return AirQualityResponse::class;
+    }
+
     protected function defaultQuery(): array
     {
-        $query = [
-            'latitude' => (string) $this->latitude,
-            'longitude' => (string) $this->longitude,
-            'timezone' => $this->timezone->value,
-        ];
-
-        if ($this->startDate !== null) {
-            $query['start_date'] = $this->startDate->format('Y-m-d');
-        }
-
-        if ($this->endDate !== null) {
-            $query['end_date'] = $this->endDate->format('Y-m-d');
-        }
+        $query = $this->coordinateWeatherQuery();
 
         if ($this->hourly !== []) {
-            $query['hourly'] = join(map($this->hourly, static fn (AirQualityHourlyVariable $variable): string => $variable->value), ',');
+            $query['hourly'] = $this->joinEnumValues($this->hourly);
+        }
+
+        if ($this->current !== []) {
+            $query['current'] = $this->joinEnumValues($this->current);
+        }
+
+        if ($this->domains !== null) {
+            $query['domains'] = $this->domains->value;
         }
 
         return $this->withApiKey($query);
     }
 
-    public function createDtoFromResponse(Response $response): AirQualityResponse
+    public function createDtoCollectionFromResponse(Response $response): AirQualityResponseCollection
     {
         /** @var array<string, mixed> $data */
         $data = $response->json();
 
-        return $this->createTimeSeriesResponseFromPayload($data, AirQualityResponse::class);
+        /** @var AirQualityResponseCollection */
+        return $this->createResponseCollectionFromPayload($data, AirQualityResponse::class);
+    }
+
+    public function dtoCollection(): AirQualityResponseCollection
+    {
+        return $this->createDtoCollectionFromResponse($this->send());
     }
 
     public function dto(): AirQualityResponse

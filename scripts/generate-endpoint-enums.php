@@ -20,6 +20,8 @@ $definitions = [
     ['EnsembleDailyVariable', $root.'/openapi/ensemble.yml', 'daily'],
     ['SeasonalHourlyVariable', $root.'/openapi/seasonal.yml', 'hourly'],
     ['SeasonalDailyVariable', $root.'/openapi/seasonal.yml', 'daily'],
+    ['SeasonalWeeklyVariable', $root.'/openapi/seasonal.yml', 'weekly'],
+    ['MonthlyVariable', $root.'/openapi/seasonal.yml', 'monthly'],
 ];
 
 foreach ($definitions as [$enumName, $specPath, $parameterName]) {

@@ -1,14 +1,12 @@
 <?php
 
-/** @pest-mutate-ignore */
-
 declare(strict_types=1);
 
 namespace TempiMarathon\OpenMeteo\Enums;
 
 enum Timezone: string
 {
-    case Auto = 'Auto';
+    case auto = 'auto';
     case GMT = 'GMT';
     case UTC = 'UTC';
     case AfricaAbidjan = 'Africa/Abidjan';

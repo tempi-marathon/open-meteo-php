@@ -4,47 +4,25 @@ declare(strict_types=1);
 
 namespace TempiMarathon\OpenMeteo\Requests\Forecast;
 
-use DateTimeInterface;
-use Saloon\Enums\Method;
-use Saloon\Http\Request;
 use Saloon\Http\Response;
-use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
 use TempiMarathon\OpenMeteo\Data\ForecastResponse;
 use TempiMarathon\OpenMeteo\Data\ForecastResponseCollection;
 use TempiMarathon\OpenMeteo\Enums\DailyVariable;
+use TempiMarathon\OpenMeteo\Enums\ForecastCurrentVariable;
+use TempiMarathon\OpenMeteo\Enums\ForecastMinutely15Variable;
 use TempiMarathon\OpenMeteo\Enums\HourlyVariable;
-use TempiMarathon\OpenMeteo\Enums\Timezone;
-use TempiMarathon\OpenMeteo\Support\CreatesTimeSeriesResponse;
-use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
-use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
-use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
-use TempiMarathon\OpenMeteo\Support\ValidatesCoordinates;
+use TempiMarathon\OpenMeteo\Requests\AbstractCoordinateGetRequest;
+use TempiMarathon\OpenMeteo\Support\BuildsSolarIrradianceOptions;
+use TempiMarathon\OpenMeteo\Support\ForecastWindowLimits;
+use TempiMarathon\OpenMeteo\Support\JoinsQueryEnumValues;
 
-use function Psl\Str\join;
-use function Psl\Vec\map;
 use function Psl\Vec\values;
 
 /** @pest-mutate-ignore */
-final class GetForecastRequest extends Request implements ResolvesRequestUrlContract
+final class GetForecastRequest extends AbstractCoordinateGetRequest
 {
-    use CreatesTimeSeriesResponse;
-    use HasApiKeyQuery;
-    use ResolvesRequestUrl;
-    use SendsThroughConnector;
-
-    protected Method $method = Method::GET;
-
-    private const int MIN_FORECAST_DAYS = 0;
-
-    private const int MAX_FORECAST_DAYS = 16;
-
-    private const int MIN_PAST_DAYS = 0;
-
-    private const int MAX_PAST_DAYS = 92;
-
-    private const int MIN_FORECAST_HOURS = 0;
-
-    private const int MAX_FORECAST_HOURS = 384;
+    use BuildsSolarIrradianceOptions;
+    use JoinsQueryEnumValues;
 
     /** @var list<HourlyVariable> */
     private array $hourly = [];
@@ -52,29 +30,11 @@ final class GetForecastRequest extends Request implements ResolvesRequestUrlCont
     /** @var list<DailyVariable> */
     private array $daily = [];
 
-    private ?DateTimeInterface $startDate = null;
+    /** @var list<ForecastCurrentVariable> */
+    private array $current = [];
 
-    private ?DateTimeInterface $endDate = null;
-
-    private Timezone $timezone = Timezone::GMT;
-
-    private ?int $forecastDays = null;
-
-    private ?int $pastDays = null;
-
-    private ?int $forecastHours = null;
-
-    private function __construct(
-        private readonly float $latitude,
-        private readonly float $longitude,
-    ) {}
-
-    public static function forCoordinates(float $latitude, float $longitude): self
-    {
-        ValidatesCoordinates::assert($latitude, $longitude);
-
-        return new self($latitude, $longitude);
-    }
+    /** @var list<ForecastMinutely15Variable> */
+    private array $minutely15 = [];
 
     public function hourly(HourlyVariable ...$variables): static
     {
@@ -90,58 +50,38 @@ final class GetForecastRequest extends Request implements ResolvesRequestUrlCont
         ]);
     }
 
-    public function between(DateTimeInterface $start, DateTimeInterface $end): static
+    public function current(ForecastCurrentVariable ...$variables): static
     {
         return clone ($this, [
-            'startDate' => $start,
-            'endDate' => $end,
+            'current' => values($variables),
         ]);
     }
 
-    public function timezone(Timezone $timezone): static
+    public function minutely15(ForecastMinutely15Variable ...$variables): static
     {
         return clone ($this, [
-            'timezone' => $timezone,
+            'minutely15' => values($variables),
         ]);
     }
 
-    public function forecastDays(int $forecastDays): static
+    protected function supportedForecastDaysRange(): array
     {
-        if ($forecastDays < self::MIN_FORECAST_DAYS || $forecastDays > self::MAX_FORECAST_DAYS) {
-            throw new \InvalidArgumentException(
-                sprintf('forecast_days must be between %d and %d, %d given.', self::MIN_FORECAST_DAYS, self::MAX_FORECAST_DAYS, $forecastDays),
-            );
-        }
-
-        return clone ($this, [
-            'forecastDays' => $forecastDays,
-        ]);
+        return [ForecastWindowLimits::FORECAST_DAYS_MIN, ForecastWindowLimits::FORECAST_DAYS_MAX];
     }
 
-    public function pastDays(int $pastDays): static
+    protected function supportedPastDaysRange(): array
     {
-        if ($pastDays < self::MIN_PAST_DAYS || $pastDays > self::MAX_PAST_DAYS) {
-            throw new \InvalidArgumentException(
-                sprintf('past_days must be between %d and %d, %d given.', self::MIN_PAST_DAYS, self::MAX_PAST_DAYS, $pastDays),
-            );
-        }
-
-        return clone ($this, [
-            'pastDays' => $pastDays,
-        ]);
+        return [ForecastWindowLimits::PAST_DAYS_MIN, ForecastWindowLimits::PAST_DAYS_MAX];
     }
 
-    public function forecastHours(int $forecastHours): static
+    protected function supportedForecastHoursRange(): array
     {
-        if ($forecastHours < self::MIN_FORECAST_HOURS || $forecastHours > self::MAX_FORECAST_HOURS) {
-            throw new \InvalidArgumentException(
-                sprintf('forecast_hours must be between %d and %d, %d given.', self::MIN_FORECAST_HOURS, self::MAX_FORECAST_HOURS, $forecastHours),
-            );
-        }
+        return [ForecastWindowLimits::FORECAST_HOURS_MIN, ForecastWindowLimits::FORECAST_HOURS_MAX];
+    }
 
-        return clone ($this, [
-            'forecastHours' => $forecastHours,
-        ]);
+    protected function supportsPastHours(): bool
+    {
+        return true;
     }
 
     public function resolveEndpoint(): string
@@ -149,51 +89,32 @@ final class GetForecastRequest extends Request implements ResolvesRequestUrlCont
         return 'forecast';
     }
 
+    protected function responseClass(): string
+    {
+        return ForecastResponse::class;
+    }
+
     protected function defaultQuery(): array
     {
-        $query = [
-            'latitude' => (string) $this->latitude,
-            'longitude' => (string) $this->longitude,
-            'timezone' => $this->timezone->value,
-        ];
-
-        if ($this->startDate !== null) {
-            $query['start_date'] = $this->startDate->format('Y-m-d');
-        }
-
-        if ($this->endDate !== null) {
-            $query['end_date'] = $this->endDate->format('Y-m-d');
-        }
-
-        if ($this->forecastDays !== null) {
-            $query['forecast_days'] = (string) $this->forecastDays;
-        }
-
-        if ($this->pastDays !== null) {
-            $query['past_days'] = (string) $this->pastDays;
-        }
-
-        if ($this->forecastHours !== null) {
-            $query['forecast_hours'] = (string) $this->forecastHours;
-        }
+        $query = $this->withSolarIrradianceQuery($this->coordinateWeatherQuery());
 
         if ($this->hourly !== []) {
-            $query['hourly'] = join(map($this->hourly, static fn (HourlyVariable $v): string => $v->value), ',');
+            $query['hourly'] = $this->joinEnumValues($this->hourly);
         }
 
         if ($this->daily !== []) {
-            $query['daily'] = join(map($this->daily, static fn (DailyVariable $v): string => $v->value), ',');
+            $query['daily'] = $this->joinEnumValues($this->daily);
+        }
+
+        if ($this->current !== []) {
+            $query['current'] = $this->joinEnumValues($this->current);
+        }
+
+        if ($this->minutely15 !== []) {
+            $query['minutely_15'] = $this->joinEnumValues($this->minutely15);
         }
 
         return $this->withApiKey($query);
-    }
-
-    public function createDtoFromResponse(Response $response): ForecastResponse
-    {
-        /** @var array<string, mixed> $data */
-        $data = $response->json();
-
-        return $this->createForecastResponseFromPayload($data);
     }
 
     public function createDtoCollectionFromResponse(Response $response): ForecastResponseCollection
@@ -201,7 +122,13 @@ final class GetForecastRequest extends Request implements ResolvesRequestUrlCont
         /** @var array<string, mixed> $data */
         $data = $response->json();
 
-        return $this->createForecastResponseCollectionFromPayload($data);
+        /** @var ForecastResponseCollection */
+        return $this->createResponseCollectionFromPayload($data, ForecastResponse::class);
+    }
+
+    public function dtoCollection(): ForecastResponseCollection
+    {
+        return $this->createDtoCollectionFromResponse($this->send());
     }
 
     public function dto(): ForecastResponse

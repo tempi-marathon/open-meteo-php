@@ -8,6 +8,7 @@ use TempiMarathon\OpenMeteo\Contracts\HasDaily;
 use TempiMarathon\OpenMeteo\Contracts\HasHourly;
 use TempiMarathon\OpenMeteo\Contracts\HasMinutely15;
 use TempiMarathon\OpenMeteo\Contracts\HasMonthly;
+use TempiMarathon\OpenMeteo\Contracts\HasWeekly;
 use TempiMarathon\OpenMeteo\Data\AirQualityResponse;
 use TempiMarathon\OpenMeteo\Data\ClimateResponse;
 use TempiMarathon\OpenMeteo\Data\EnsembleResponse;
@@ -18,12 +19,14 @@ use TempiMarathon\OpenMeteo\Data\MarineResponse;
 use TempiMarathon\OpenMeteo\Data\SeasonalResponse;
 
 covers(
-    CoordinateResponse::class,
-    HasCurrent::class,
-    HasDaily::class,
-    HasHourly::class,
-    HasMinutely15::class,
-    HasMonthly::class,
+    ForecastResponse::class,
+    HistoricalResponse::class,
+    AirQualityResponse::class,
+    ClimateResponse::class,
+    EnsembleResponse::class,
+    FloodResponse::class,
+    MarineResponse::class,
+    SeasonalResponse::class,
 );
 
 it('implements coordinate metadata on every response', function (callable $factory, float $latitude, float $longitude, string $timezone): void {
@@ -99,7 +102,8 @@ it('declares hourly capability only on supported responses', function (): void {
     }
 
     expect(timeSeriesResponseFromPayload(climatePayload(), ClimateResponse::class))->not->toBeInstanceOf(HasHourly::class)
-        ->and(timeSeriesResponseFromPayload(floodPayload(), FloodResponse::class))->not->toBeInstanceOf(HasHourly::class);
+        ->and(timeSeriesResponseFromPayload(floodPayload(), FloodResponse::class))->not->toBeInstanceOf(HasHourly::class)
+        ->and(timeSeriesResponseFromPayload(seasonalPayload(), SeasonalResponse::class))->toBeInstanceOf(HasHourly::class);
 });
 
 it('declares daily capability only on supported responses', function (): void {
@@ -109,14 +113,13 @@ it('declares daily capability only on supported responses', function (): void {
         timeSeriesResponseFromPayload(climatePayload(), ClimateResponse::class),
         timeSeriesResponseFromPayload(floodPayload(), FloodResponse::class),
         timeSeriesResponseFromPayload(seasonalPayload(), SeasonalResponse::class),
+        timeSeriesResponseFromPayload(ensemblePayload(), EnsembleResponse::class),
     ];
 
     foreach ($supported as $response) {
         expect($response)->toBeInstanceOf(HasDaily::class)
             ->and(dailyPointCount($response))->toBeGreaterThanOrEqual(0);
     }
-
-    expect(timeSeriesResponseFromPayload(ensemblePayload(), EnsembleResponse::class))->not->toBeInstanceOf(HasDaily::class);
 });
 
 it('declares current capability only on supported responses', function (): void {
@@ -146,6 +149,14 @@ it('declares minutely 15 capability only on supported responses', function (): v
     }
 
     expect(timeSeriesResponseFromPayload(historicalPayload(), HistoricalResponse::class))->not->toBeInstanceOf(HasMinutely15::class);
+});
+
+it('declares weekly capability only on seasonal responses', function (): void {
+    $seasonal = timeSeriesResponseFromPayload(seasonalPayload(), SeasonalResponse::class);
+
+    expect($seasonal)->toBeInstanceOf(HasWeekly::class)
+        ->and($seasonal->weekly()->count())->toBeGreaterThanOrEqual(0)
+        ->and(timeSeriesResponseFromPayload(forecastPayload(), ForecastResponse::class))->not->toBeInstanceOf(HasWeekly::class);
 });
 
 it('declares monthly capability only on seasonal responses', function (): void {

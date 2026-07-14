@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use TempiMarathon\OpenMeteo\Connectors\ForecastConnector;
 use TempiMarathon\OpenMeteo\Enums\AirQualityHourlyVariable;
+use TempiMarathon\OpenMeteo\Exceptions\InvalidCoordinateException;
+use TempiMarathon\OpenMeteo\Exceptions\InvalidForecastParameterException;
+use TempiMarathon\OpenMeteo\Exceptions\InvalidGeocodingSearchException;
 use TempiMarathon\OpenMeteo\Requests\AirQuality\GetAirQualityRequest;
 use TempiMarathon\OpenMeteo\Requests\Forecast\GetForecastRequest;
 use TempiMarathon\OpenMeteo\Requests\Geocoding\SearchRequest;
@@ -18,16 +21,16 @@ covers(
 
 it('validates latitude range', function (): void {
     expect(fn () => ValidatesCoordinates::assert(91.0, 0.0))
-        ->toThrow(InvalidArgumentException::class, 'latitude must be between')
+        ->toThrow(InvalidCoordinateException::class, 'latitude must be between -90 and 90')
         ->and(fn () => ValidatesCoordinates::assert(-91.0, 0.0))
-        ->toThrow(InvalidArgumentException::class, 'latitude must be between');
+        ->toThrow(InvalidCoordinateException::class, 'latitude must be between -90 and 90');
 });
 
 it('validates longitude range', function (): void {
     expect(fn () => ValidatesCoordinates::assert(0.0, 181.0))
-        ->toThrow(InvalidArgumentException::class, 'longitude must be between')
+        ->toThrow(InvalidCoordinateException::class, 'longitude must be between -180 and 180')
         ->and(fn () => ValidatesCoordinates::assert(0.0, -181.0))
-        ->toThrow(InvalidArgumentException::class, 'longitude must be between');
+        ->toThrow(InvalidCoordinateException::class, 'longitude must be between -180 and 180');
 });
 
 it('accepts boundary coordinates', function (): void {
@@ -48,12 +51,12 @@ it('accepts minimum boundary coordinates', function (): void {
 
 it('rejects empty geocoding search names', function (): void {
     expect(fn () => ValidatesGeocodingSearchName::normalize('   '))
-        ->toThrow(InvalidArgumentException::class, 'name must not be empty');
+        ->toThrow(InvalidGeocodingSearchException::class, 'name must not be empty');
 });
 
 it('rejects overly long geocoding search names', function (): void {
     expect(fn () => ValidatesGeocodingSearchName::normalize(str_repeat('a', 257)))
-        ->toThrow(InvalidArgumentException::class, 'name must not exceed');
+        ->toThrow(InvalidGeocodingSearchException::class, 'name must not exceed 256 characters');
 });
 
 it('trims geocoding search names', function (): void {
@@ -66,17 +69,17 @@ it('rejects names at the maximum allowed length boundary', function (): void {
 
 it('validates forecast hour ranges', function (): void {
     expect(fn () => GetForecastRequest::forCoordinates(52.37, 4.89)->forecastHours(385))
-        ->toThrow(InvalidArgumentException::class, 'forecast_hours must be between');
+        ->toThrow(InvalidForecastParameterException::class, 'forecast_hours must be between');
 });
 
 it('validates coordinates on forecast requests', function (): void {
     expect(fn () => (new ForecastConnector)->weather()->get(100.0, 4.89))
-        ->toThrow(InvalidArgumentException::class, 'latitude must be between');
+        ->toThrow(InvalidCoordinateException::class, 'latitude must be between');
 });
 
 it('validates geocoding search names at construction', function (): void {
     expect(fn () => new SearchRequest(''))
-        ->toThrow(InvalidArgumentException::class, 'name must not be empty');
+        ->toThrow(InvalidGeocodingSearchException::class, 'name must not be empty');
 });
 
 it('builds air quality hourly queries from enums', function (): void {

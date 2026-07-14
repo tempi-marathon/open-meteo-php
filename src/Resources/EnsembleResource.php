@@ -12,4 +12,12 @@ final class EnsembleResource extends BaseResource
     {
         return GetEnsembleRequest::forCoordinates($latitude, $longitude)->using($this->connector);
     }
+
+    /**
+     * @param  list<array{0: float, 1: float}>  $points
+     */
+    public function forPoints(array $points): GetEnsembleRequest
+    {
+        return GetEnsembleRequest::forPoints($points)->using($this->connector);
+    }
 }

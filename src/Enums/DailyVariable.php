@@ -30,5 +30,4 @@ enum DailyVariable: string
     case WindDirection10mDominant = 'wind_direction_10m_dominant';
     case ShortwaveRadiationSum = 'shortwave_radiation_sum';
     case Et0FaoEvapotranspiration = 'et0_fao_evapotranspiration';
-    case NameCurrent = 'name: current';
 }

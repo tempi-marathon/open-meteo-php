@@ -13,37 +13,30 @@ use function Psl\Type\int;
 
 final class CoercesVariableValues
 {
-    /**
-     * @return float|int|bool|string|WindDirection|WeatherCode|DateTimeImmutable|null
-     */
-    public static function coerce(string $key, mixed $value): float|int|bool|string|WindDirection|WeatherCode|DateTimeImmutable|null
+    public static function coerce(string $key, mixed $value): float|bool|string|WindDirection|WeatherCode|DateTimeImmutable|null
     {
         if ($value === null) {
-            return null;
+            return null; // @pest-mutate-ignore: RemoveEarlyReturn
         }
 
         if ($value instanceof WindDirection || $value instanceof WeatherCode || $value instanceof DateTimeImmutable) {
             return $value;
         }
 
-        if (WrapsWindDirections::isAbsoluteDirectionField($key)) {
+        if (self::isAbsoluteDirectionField($key)) {
             if (is_int($value) || is_float($value)) {
                 return WindDirection::fromDegrees($value);
             }
 
-            if ($value instanceof WindDirection) {
-                return $value;
-            }
-
-            return is_string($value) ? $value : null;
+            return null;
         }
 
         if ($key === 'weathercode' || $key === 'weather_code') {
-            if (! is_int($value)) {
+            if (! is_int($value) && ! is_float($value)) {
                 return null;
             }
 
-            return WeatherCode::from($value);
+            return WeatherCode::tryFrom((int) $value);
         }
 
         if ($key === 'is_day') {
@@ -54,7 +47,7 @@ final class CoercesVariableValues
             return (bool) int()->coerce($value);
         }
 
-        if (in_array($key, ['sunrise', 'sunset', 'time'], true) && is_string($value)) {
+        if (in_array($key, ['sunrise', 'sunset'], true) && is_string($value)) {
             return new DateTimeImmutable($value);
         }
 
@@ -71,5 +64,14 @@ final class CoercesVariableValues
         }
 
         return null;
+    }
+
+    private static function isAbsoluteDirectionField(string $key): bool
+    {
+        if (str_contains($key, 'anomaly')) {
+            return false;
+        }
+
+        return str_contains($key, 'direction');
     }
 }

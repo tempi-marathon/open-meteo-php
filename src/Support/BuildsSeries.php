@@ -11,6 +11,9 @@ use TempiMarathon\OpenMeteo\Data\HourlySeries;
 use TempiMarathon\OpenMeteo\Data\Minutely15Series;
 use TempiMarathon\OpenMeteo\Data\MonthlySeries;
 use TempiMarathon\OpenMeteo\Data\SeriesPoint;
+use TempiMarathon\OpenMeteo\Data\WeeklySeries;
+use TempiMarathon\OpenMeteo\Exceptions\MissingCurrentTimeException;
+use TempiMarathon\OpenMeteo\Exceptions\MissingSeriesTimeException;
 
 use function Psl\Type\int;
 use function Psl\Type\string;
@@ -53,6 +56,14 @@ trait BuildsSeries
     }
 
     /**
+     * @param  array<string, list<int|float|string|null>>  $payload
+     */
+    protected function createWeeklySeries(array $payload): WeeklySeries
+    {
+        return new WeeklySeries($this->createSeriesPoints($payload));
+    }
+
+    /**
      * @param  array<string, int|float|string|null>  $payload
      */
     protected function createCurrentSeries(array $payload): CurrentSeries
@@ -62,7 +73,7 @@ trait BuildsSeries
         }
 
         if (! isset($payload['time']) || ! is_string($payload['time'])) {
-            throw new \InvalidArgumentException('Current data must contain a time value.');
+            throw new MissingCurrentTimeException;
         }
 
         $interval = null;
@@ -101,11 +112,11 @@ trait BuildsSeries
         $payload = $this->normalizeSeriesKeys($payload);
 
         if (! isset($payload['time'])) {
-            throw new \InvalidArgumentException('Series data must contain a time array.');
+            throw new MissingSeriesTimeException;
         }
 
         $times = vec(string())->coerce($payload['time']);
-        $variableKeys = array_values(array_filter(
+        $variableKeys = array_values(array_filter( // @pest-mutate-ignore: UnwrapArrayFilter, UnwrapArrayValues
             array_keys($payload),
             static fn (string $key): bool => $key !== 'time',
         ));

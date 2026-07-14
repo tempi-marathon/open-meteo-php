@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace TempiMarathon\OpenMeteo\Support;
 
+use TempiMarathon\OpenMeteo\Exceptions\InvalidCoordinateException;
+
 /** @pest-mutate-ignore */
 final class ValidatesCoordinates
 {
@@ -18,13 +20,13 @@ final class ValidatesCoordinates
     public static function assert(float $latitude, float $longitude): void
     {
         if ($latitude < self::MIN_LATITUDE || $latitude > self::MAX_LATITUDE) {
-            throw new \InvalidArgumentException(
+            throw new InvalidCoordinateException(
                 sprintf('latitude must be between %s and %s, %s given.', self::MIN_LATITUDE, self::MAX_LATITUDE, $latitude),
             );
         }
 
         if ($longitude < self::MIN_LONGITUDE || $longitude > self::MAX_LONGITUDE) {
-            throw new \InvalidArgumentException(
+            throw new InvalidCoordinateException(
                 sprintf('longitude must be between %s and %s, %s given.', self::MIN_LONGITUDE, self::MAX_LONGITUDE, $longitude),
             );
         }

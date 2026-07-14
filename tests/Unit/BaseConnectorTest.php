@@ -23,6 +23,14 @@ covers(
     OpenMeteoConfig::class,
 );
 
+it('uses default retry configuration', function (): void {
+    $connector = new ForecastConnector;
+
+    expect($connector->tries)->toBe(3)
+        ->and($connector->retryInterval)->toBe(500)
+        ->and($connector->useExponentialBackoff)->toBeTrue();
+});
+
 it('retries transient failures', function (): void {
     $attempts = 0;
 

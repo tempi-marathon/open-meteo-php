@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Saloon\Http\Faking\MockClient;
 use TempiMarathon\OpenMeteo\Connectors\ForecastConnector;
-use TempiMarathon\OpenMeteo\Data\HourlyReadingCollection;
+use TempiMarathon\OpenMeteo\Data\HourlySeries;
 use TempiMarathon\OpenMeteo\Enums\WeatherCode;
 use TempiMarathon\OpenMeteo\Requests\Forecast\GetForecastRequest;
 use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
@@ -12,7 +12,7 @@ use TempiMarathon\OpenMeteo\Support\RedactsUriSecrets;
 use TempiMarathon\OpenMeteo\WindDirection;
 
 covers(
-    HourlyReadingCollection::class,
+    HourlySeries::class,
     OpenMeteoConfig::class,
     RedactsUriSecrets::class,
     WindDirection::class,
@@ -82,6 +82,23 @@ it('loads trusted config files from inside the package root', function (): void 
     putenv('OPENMETEO_CONFIG_PATH');
 });
 
+it('exposes default hosts for every api surface', function (string $surface, string $host): void {
+    OpenMeteoConfig::reset();
+
+    expect(OpenMeteoConfig::host($surface, 'https://wrong.example/v1/'))->toBe($host);
+})->with([
+    'forecast' => ['forecast', 'https://api.open-meteo.com/v1/'],
+    'historical' => ['historical', 'https://archive-api.open-meteo.com/v1/'],
+    'geocoding' => ['geocoding', 'https://geocoding-api.open-meteo.com/v1/'],
+    'air quality' => ['air_quality', 'https://air-quality-api.open-meteo.com/v1/'],
+    'marine' => ['marine', 'https://marine-api.open-meteo.com/v1/'],
+    'climate' => ['climate', 'https://climate-api.open-meteo.com/v1/'],
+    'flood' => ['flood', 'https://flood-api.open-meteo.com/v1/'],
+    'ensemble' => ['ensemble', 'https://ensemble-api.open-meteo.com/v1/'],
+    'seasonal' => ['seasonal', 'https://seasonal-api.open-meteo.com/v1/'],
+    'elevation' => ['elevation', 'https://api.open-meteo.com/v1/'],
+]);
+
 it('rejects config files outside the package root even with a matching prefix', function (): void {
     OpenMeteoConfig::reset();
 
@@ -148,14 +165,14 @@ it('returns null for missing hourly indexes without throwing', function (): void
         ->weather()
         ->get(52.37, 4.89)
         ->dto()
-        ->hourlyReadings();
+        ->hourly();
 
     expect($readings->count())->toBe(2)
-        ->and($readings->closestTo(new DateTimeImmutable('2026-07-06T11:00'))?->temperature2m)->toBeNull()
-        ->and($readings->closestTo(new DateTimeImmutable('2026-07-06T11:00'))?->weatherCode)->toBeNull()
-        ->and($readings->closestTo(new DateTimeImmutable('2026-07-06T11:00'))?->windSpeed10m)->toBeNull()
-        ->and($readings->closestTo(new DateTimeImmutable('2026-07-06T11:00'))?->windDirection10m)->toBeNull()
-        ->and($readings->closestTo(new DateTimeImmutable('2026-07-06T11:00'))?->isDay)->toBeNull();
+        ->and($readings->closestTo(new DateTimeImmutable('2026-07-06T11:00'))?->get('temperature_2m'))->toBeNull()
+        ->and($readings->closestTo(new DateTimeImmutable('2026-07-06T11:00'))?->get('weathercode'))->toBeNull()
+        ->and($readings->closestTo(new DateTimeImmutable('2026-07-06T11:00'))?->get('wind_speed_10m'))->toBeNull()
+        ->and($readings->closestTo(new DateTimeImmutable('2026-07-06T11:00'))?->get('wind_direction_10m'))->toBeNull()
+        ->and($readings->closestTo(new DateTimeImmutable('2026-07-06T11:00'))?->get('is_day'))->toBeNull();
 });
 
 it('returns null for absent weather code indexes', function (): void {
@@ -178,12 +195,12 @@ it('returns null for absent weather code indexes', function (): void {
         ->weather()
         ->get(52.37, 4.89)
         ->dto()
-        ->hourlyReadings()
+        ->hourly()
         ->closestTo(new DateTimeImmutable('2026-07-06T11:00'));
 
-    expect($reading?->weatherCode)->toBeNull();
+    expect($reading?->get('weathercode'))->toBeNull();
 });
 
 it('returns null when closest reading is requested on an empty collection', function (): void {
-    expect((new HourlyReadingCollection([]))->closestTo(new DateTimeImmutable('2026-07-06T12:00')))->toBeNull();
+    expect((new HourlySeries([]))->closestTo(new DateTimeImmutable('2026-07-06T12:00')))->toBeNull();
 });

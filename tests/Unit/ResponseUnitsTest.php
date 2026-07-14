@@ -4,20 +4,24 @@ declare(strict_types=1);
 
 use TempiMarathon\OpenMeteo\Data\AirQualityUnits;
 use TempiMarathon\OpenMeteo\Data\DailyUnits;
+use TempiMarathon\OpenMeteo\Data\EnsembleUnits;
 use TempiMarathon\OpenMeteo\Data\ForecastUnits;
 use TempiMarathon\OpenMeteo\Data\HistoricalUnits;
 use TempiMarathon\OpenMeteo\Data\HourlyUnits;
 use TempiMarathon\OpenMeteo\Data\MarineUnits;
 use TempiMarathon\OpenMeteo\Data\SeasonalUnits;
 use TempiMarathon\OpenMeteo\Enums\HourlyVariable;
+use TempiMarathon\OpenMeteo\Support\ResolvesVariableUnits;
 
 covers(
     AirQualityUnits::class,
     DailyUnits::class,
+    EnsembleUnits::class,
     ForecastUnits::class,
     HistoricalUnits::class,
     HourlyUnits::class,
     MarineUnits::class,
+    ResolvesVariableUnits::class,
     SeasonalUnits::class,
 );
 
@@ -62,11 +66,13 @@ it('resolves air quality units', function (): void {
 it('resolves marine units', function (): void {
     $units = new MarineUnits(
         hourlyUnits: ['wave_height' => 'm'],
+        dailyUnits: ['wave_height_max' => 'm'],
         currentUnits: ['wave_height' => 'm'],
         minutely15Units: ['wave_height' => 'm'],
     );
 
     expect($units->hourlyUnit('wave_height'))->toBe('m')
+        ->and($units->dailyUnit('wave_height_max'))->toBe('m')
         ->and($units->currentUnit('wave_height'))->toBe('m')
         ->and($units->minutely15Unit('wave_height'))->toBe('m')
         ->and($units->minutely15Unit('missing'))->toBeNull();
@@ -88,11 +94,15 @@ it('resolves hourly-only units', function (): void {
 
 it('resolves seasonal units', function (): void {
     $units = new SeasonalUnits(
+        hourlyUnits: ['temperature_2m' => '°C'],
         dailyUnits: ['temperature_2m_max' => '°C'],
+        weeklyUnits: ['temperature_2m_mean' => '°C'],
         monthlyUnits: ['temperature_2m_mean' => '°C'],
     );
 
-    expect($units->dailyUnit('temperature_2m_max'))->toBe('°C')
+    expect($units->hourlyUnit('temperature_2m'))->toBe('°C')
+        ->and($units->dailyUnit('temperature_2m_max'))->toBe('°C')
+        ->and($units->weeklyUnit('temperature_2m_mean'))->toBe('°C')
         ->and($units->monthlyUnit('temperature_2m_mean'))->toBe('°C')
         ->and($units->monthlyUnit('missing'))->toBeNull();
 });

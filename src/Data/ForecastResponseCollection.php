@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace TempiMarathon\OpenMeteo\Data;
 
-use Countable;
-use IteratorAggregate;
 use Traversable;
 
-/** @implements IteratorAggregate<int, ForecastResponse> */
-final readonly class ForecastResponseCollection implements Countable, IteratorAggregate
+final readonly class ForecastResponseCollection extends CoordinateResponseCollection
 {
     /** @param list<ForecastResponse> $responses */
-    public function __construct(private array $responses) {}
-
-    public function count(): int
+    public function __construct(array $responses)
     {
-        return count($this->responses);
+        parent::__construct($responses);
+    }
+
+    public function first(): ?ForecastResponse
+    {
+        $first = parent::first();
+
+        return $first instanceof ForecastResponse ? $first : null;
     }
 
     public function getIterator(): Traversable
@@ -24,10 +26,5 @@ final readonly class ForecastResponseCollection implements Countable, IteratorAg
         foreach ($this->responses as $response) {
             yield $response;
         }
-    }
-
-    public function first(): ?ForecastResponse
-    {
-        return $this->responses[0] ?? null;
     }
 }

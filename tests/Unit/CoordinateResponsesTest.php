@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use TempiMarathon\OpenMeteo\Data\AirQualityResponse;
 use TempiMarathon\OpenMeteo\Data\ClimateResponse;
+use TempiMarathon\OpenMeteo\Data\CoordinateMetadata;
 use TempiMarathon\OpenMeteo\Data\EnsembleResponse;
 use TempiMarathon\OpenMeteo\Data\FloodResponse;
 use TempiMarathon\OpenMeteo\Data\ForecastResponse;
@@ -14,6 +15,7 @@ use TempiMarathon\OpenMeteo\Data\SeasonalResponse;
 covers(
     AirQualityResponse::class,
     ClimateResponse::class,
+    CoordinateMetadata::class,
     EnsembleResponse::class,
     FloodResponse::class,
     ForecastResponse::class,
@@ -70,4 +72,29 @@ it('builds seasonal responses with daily temperature maxima', function (): void 
     $response = timeSeriesResponseFromPayload(seasonalPayload(), SeasonalResponse::class);
 
     expect($response->daily()->at(0)?->get('temperature_2m_max'))->toBe(23.9);
+});
+
+it('exposes coordinate metadata on responses', function (): void {
+    $response = timeSeriesResponseFromPayload(forecastPayload(), ForecastResponse::class);
+
+    expect($response->metadata)->toBeInstanceOf(CoordinateMetadata::class)
+        ->and($response->metadata->elevation)->toBe(11.0)
+        ->and($response->metadata->generationTimeMs)->toBeFloat()
+        ->and($response->metadata->utcOffsetSeconds)->toBe(7200)
+        ->and($response->metadata->timezoneAbbreviation)->toBe('GMT+2');
+});
+
+it('parses coordinate metadata from payloads with optional fields omitted', function (): void {
+    $metadata = CoordinateMetadata::fromPayload([
+        'elevation' => 12.5,
+        'generationtime_ms' => 1.2,
+        'utc_offset_seconds' => 0,
+        'timezone_abbreviation' => 'UTC',
+    ]);
+
+    expect($metadata->elevation)->toBe(12.5)
+        ->and($metadata->generationTimeMs)->toBe(1.2)
+        ->and($metadata->utcOffsetSeconds)->toBe(0)
+        ->and($metadata->timezoneAbbreviation)->toBe('UTC')
+        ->and(CoordinateMetadata::fromPayload([])->elevation)->toBeNull();
 });

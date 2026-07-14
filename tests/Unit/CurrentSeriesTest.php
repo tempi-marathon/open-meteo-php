@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use TempiMarathon\OpenMeteo\Data\CurrentSeries;
 use TempiMarathon\OpenMeteo\Data\SeriesPoint;
-use TempiMarathon\OpenMeteo\Enums\CurrentVariable;
+use TempiMarathon\OpenMeteo\Enums\ForecastCurrentVariable;
 use TempiMarathon\OpenMeteo\WindDirection;
 
 covers(CurrentSeries::class);
@@ -24,7 +24,7 @@ it('wraps the current snapshot as a single-item series', function (): void {
     expect($current->count())->toBe(1)
         ->and($current->first()?->datetime->format('Y-m-d\TH:i'))->toBe('2026-07-11T12:00')
         ->and($current->first()?->interval)->toBe(900)
-        ->and($current->first()?->get(CurrentVariable::Temperature2m))->toBe(21.5)
+        ->and($current->first()?->get(ForecastCurrentVariable::Temperature2m))->toBe(21.5)
         ->and($current->first()?->get('wind_direction_10m')?->label())->toBe('E');
 });
 

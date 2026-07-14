@@ -4,14 +4,61 @@ declare(strict_types=1);
 
 namespace TempiMarathon\OpenMeteo\Support;
 
+use BackedEnum;
+
+use function Psl\Str\lowercase;
+
 final class ConvertsApiKeys
 {
+    /** @var array<string, string> */
+    private const ALIASES = [
+        'weathercode' => 'weather_code',
+        'windspeed_10m' => 'wind_speed_10m',
+        'winddirection_10m' => 'wind_direction_10m',
+    ];
+
     public static function propertyToApiKey(string $property): string
     {
-        $key = preg_replace('/(?<!^)[A-Z]/', '_$0', $property) ?? $property;
-        $key = strtolower($key);
-        $key = preg_replace('/([a-z])(\d)/', '$1_$2', $key) ?? $key;
+        return $property
+            |> (fn (string $key): string => preg_replace('/(?<!^)[A-Z]/', '_$0', $key) ?? $key)
+            |> lowercase(...)
+            |> (fn (string $key): string => preg_replace('/([a-z])(\d)/', '$1_$2', $key) ?? $key);
+    }
 
-        return $key;
+    /**
+     * @return list<string>
+     */
+    public static function candidateKeys(BackedEnum|string $variable): array
+    {
+        if ($variable instanceof BackedEnum) {
+            return self::expandAliases([(string) $variable->value]);
+        }
+
+        return self::expandAliases([self::propertyToApiKey($variable)]);
+    }
+
+    /**
+     * @param  list<string>  $keys
+     * @return list<string>
+     */
+    private static function expandAliases(array $keys): array
+    {
+        $expanded = [];
+
+        foreach ($keys as $key) {
+            $expanded[] = $key;
+
+            if (isset(self::ALIASES[$key])) {
+                $expanded[] = self::ALIASES[$key];
+            }
+
+            foreach (self::ALIASES as $from => $to) {
+                if ($key === $to) {
+                    $expanded[] = $from;
+                }
+            }
+        }
+
+        return array_values(array_unique($expanded)); // @pest-mutate-ignore: UnwrapArrayUnique, UnwrapArrayValues
     }
 }

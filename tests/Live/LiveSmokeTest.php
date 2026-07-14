@@ -29,7 +29,7 @@ it('fetches a live forecast from Open-Meteo', function (): void {
         ->dto();
 
     expect($response)->toBeInstanceOf(ForecastResponse::class)
-        ->and($response->hourly)->toHaveKey('temperature_2m');
+        ->and($response->hourly()->at(0)?->get('temperature_2m'))->toBeFloat();
 })->group('live');
 
 it('fetches live air quality from Open-Meteo', function (): void {
@@ -40,7 +40,7 @@ it('fetches live air quality from Open-Meteo', function (): void {
         ->dto();
 
     expect($response)->toBeInstanceOf(AirQualityResponse::class)
-        ->and($response->hourly)->toHaveKey('european_aqi');
+        ->and($response->hourly()->at(0)?->get('european_aqi'))->toBeFloat();
 })->group('live');
 
 it('searches live geocoding results from Open-Meteo', function (): void {
