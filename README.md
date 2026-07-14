@@ -32,29 +32,6 @@ $forecast = (new OpenMeteo())
 
 No environment variables, configuration files, or Laravel setup needed.
 
-### Human-readable values
-
-Time-series data is exposed as typed `SeriesPoint` objects inside interval series — not raw arrays:
-
-```php
-$point = $forecast->hourly()->at(0);
-// or: foreach ($forecast->hourly() as $point) { ... }
-// or: $forecast->hourly()->closestTo(new DateTimeImmutable('2026-07-11T12:00'));
-
-$point?->get('temperature_2m');                // 21.2
-$point?->get('weathercode')?->label();        // "Partly cloudy"
-echo $point?->get('wind_direction_80m');       // "SW" — Stringable compass label
-$point?->get('wind_direction_80m')?->getRaw();  // 225 — degrees when you need the number
-
-$forecast->daily()->at(0)?->get('temperature_2m_max');
-$forecast->minutely15()->at(0)?->get('temperature_2m');
-$forecast->current()->first()?->get('wind_direction_10m')?->label(); // current snapshot
-```
-
-Each response type exposes only the intervals its API supports — for example `AirQualityResponse` implements `HasHourly` and `HasCurrent`, while `ForecastResponse` adds `HasDaily` and `HasMinutely15`. Use `instanceof HasDaily` when writing generic code.
-
-Absolute direction fields (wind, wave, swell, ocean current, and similar) are parsed into `WindDirection` automatically. Anomaly fields such as `wind_direction_10m_anomaly` stay as numeric values.
-
 ## Usage
 
 Chain request options on the fluent builder, then call `->dto()` for a typed response or `->send()` for the raw Saloon response.
@@ -104,6 +81,29 @@ $data = $forecast->weather()->get(52.52, 13.41)
 
 Use `debugUrl()` on a resource to inspect the request URL during development. It redacts secrets such as API keys — see [SECURITY.md](SECURITY.md).
 
+### Human-readable values
+
+Time-series data is exposed as typed `SeriesPoint` objects inside interval series — not raw arrays:
+
+```php
+$point = $forecast->hourly()->at(0);
+// or: foreach ($forecast->hourly() as $point) { ... }
+// or: $forecast->hourly()->closestTo(new DateTimeImmutable('2026-07-11T12:00'));
+
+$point?->get('temperature_2m');                // 21.2
+$point?->get('weathercode')?->label();        // "Partly cloudy"
+echo $point?->get('wind_direction_80m');       // "SW" — Stringable compass label
+$point?->get('wind_direction_80m')?->getRaw();  // 225 — degrees when you need the number
+
+$forecast->daily()->at(0)?->get('temperature_2m_max');
+$forecast->minutely15()->at(0)?->get('temperature_2m');
+$forecast->current()->first()?->get('wind_direction_10m')?->label(); // current snapshot
+```
+
+Each response type exposes only the intervals its API supports — for example `AirQualityResponse` implements `HasHourly` and `HasCurrent`, while `ForecastResponse` adds `HasDaily` and `HasMinutely15`. Use `instanceof HasDaily` when writing generic code.
+
+Absolute direction fields (wind, wave, swell, ocean current, and similar) are parsed into `WindDirection` automatically. Anomaly fields such as `wind_direction_10m_anomaly` stay as numeric values.
+
 ## Supported APIs
 
 | Facade method | API | Open-Meteo docs |
@@ -119,13 +119,15 @@ Use `debugUrl()` on a resource to inspect the request URL during development. It
 | `seasonal()` | Seasonal forecast | [Seasonal Forecast API](https://open-meteo.com/en/docs/seasonal-forecast-api) |
 | `elevation()` | Elevation | [Elevation API](https://open-meteo.com/en/docs/elevation-api) |
 
-All coordinate-based APIs share fluent builders for `timezone()`, `between()`, unit options (`temperatureUnit()`, `windSpeedUnit()`, `precipitationUnit()`, `timeFormat()`, `cellSelection()`, `models()`, `elevation()`), and `withQueryParam()` for escape-hatch parameters. Forecast-window options (`forecastDays()`, `pastDays()`, `forecastHours()`, `pastHours()`) are validated per endpoint.
+Each connector exposes a resource before `get()` — for example `forecast()->weather()`, `historical()->archive()`, `elevation()->elevation()`.
+
+Weather endpoints share builders like `timezone()`, `between()`, unit options, `models()`, and `withQueryParam()`. Which options apply depends on the endpoint. Elevation only accepts coordinates. Forecast-window options (`forecastDays()`, `pastDays()`, `forecastHours()`, `pastHours()`) are endpoint-specific too — `forecastHours()` and `pastHours()` work on forecast, historical, and ensemble only.
 
 Climate and historical requests require `between($start, $end)` before sending. Seasonal supports `weekly()` in addition to hourly, daily, and monthly intervals. Air quality accepts `domains()`. Climate accepts `disableBiasCorrection()`. Ensemble accepts `temporalResolution()`. Forecast, historical, and ensemble support solar irradiance options via `tilt()` and `azimuth()`.
 
-Each API uses endpoint-specific variable enums generated from the OpenAPI specs (for example `MarineHourlyVariable`, `HistoricalDailyVariable`, `EnsembleHourlyVariable`, `ForecastCurrentVariable`, `AirQualityCurrentVariable`). Weather model IDs are typed per endpoint (`ForecastModel`, `HistoricalModel`, etc.) and passed to `models()`. Responses expose root metadata (`elevation`, `generationtime_ms`, `utc_offset_seconds`, `timezone_abbreviation`) on `$response->metadata`.
+Each API uses endpoint-specific variable enums generated from the OpenAPI specs (for example `MarineHourlyVariable`, `HistoricalDailyVariable`, `EnsembleHourlyVariable`, `ForecastCurrentVariable`, `AirQualityCurrentVariable`). Weather model IDs are typed per endpoint (`ForecastModel`, `HistoricalModel`, etc.) and passed to `models()` where supported. Response metadata lives on `$response->metadata` (`elevation`, `generationTimeMs`, `utcOffsetSeconds`, `timezoneAbbreviation`).
 
-All coordinate resources support batch lookups via `forPoints()`. Single-coordinate responses use `->dto()`; multi-coordinate responses use `->dtoCollection()`, which returns a typed collection per endpoint (for example `ForecastResponseCollection`, `HistoricalResponseCollection`).
+Weather resources support `forPoints()` for batch lookups. Use `->dto()` for a single location; use `->dtoCollection()` for multi-location weather responses (for example `ForecastResponseCollection`). Elevation returns one `->dto()` with an array of values.
 
 ## Optional configuration
 
