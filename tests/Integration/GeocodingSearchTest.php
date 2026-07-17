@@ -164,9 +164,9 @@ it('uses default search count when not configured', function (): void {
 
 it('validates count range', function (): void {
     expect(fn () => (new GeocodingConnector)->locations()->search('Amsterdam')->count(0))
-        ->toThrow(InvalidGeocodingCountException::class, 'count must be between 1 and 100')
+        ->toThrow(InvalidGeocodingCountException::class, 'count must be between 1 and 100, 0 given.')
         ->and(fn () => (new GeocodingConnector)->locations()->search('Amsterdam')->count(101))
-        ->toThrow(InvalidGeocodingCountException::class, 'count must be between 1 and 100');
+        ->toThrow(InvalidGeocodingCountException::class, 'count must be between 1 and 100, 101 given.');
 });
 
 it('accepts search count boundaries', function (): void {

@@ -130,6 +130,34 @@ it('returns empty collection when results are not an array', function (): void {
     expect($request->createDtoFromResponse($response)->count())->toBe(0);
 });
 
+it('ignores array-like non-array geocoding results that foreach could iterate', function (): void {
+    $request = new SearchRequest('Test');
+    $location = geocodingSearchPayload()['results'][0];
+    $pending = new PendingRequest(new GeocodingConnector, $request);
+    $response = new class($request, $pending, $location) extends Response
+    {
+        /** @param array<string, mixed> $location */
+        public function __construct(
+            SearchRequest $request,
+            PendingRequest $pending,
+            private array $location,
+        ) {
+            parent::__construct(
+                new GuzzleHttp\Psr7\Response(200, [], '{}'),
+                $pending,
+                $pending->createPsrRequest(),
+            );
+        }
+
+        public function json(string|int|null $key = null, mixed $default = null): mixed
+        {
+            return ['results' => new ArrayObject([$this->location])];
+        }
+    };
+
+    expect($request->createDtoFromResponse($response)->count())->toBe(0);
+});
+
 it('iterates geocoding location collection items', function (): void {
     $request = new SearchRequest('Amsterdam');
     $collection = $request->createDtoFromResponse(

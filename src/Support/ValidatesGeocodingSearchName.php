@@ -6,9 +6,9 @@ namespace TempiMarathon\OpenMeteo\Support;
 
 use TempiMarathon\OpenMeteo\Exceptions\InvalidGeocodingSearchException;
 
-/** @pest-mutate-ignore */
 final class ValidatesGeocodingSearchName
 {
+    // @pest-mutate-ignore
     private const int MAX_LENGTH = 256;
 
     public static function normalize(string $name): string

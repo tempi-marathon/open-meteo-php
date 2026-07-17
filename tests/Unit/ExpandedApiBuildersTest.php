@@ -202,6 +202,19 @@ it('covers abstract coordinate default query', function (): void {
 });
 
 it('covers remaining forecast window ranges and validation', function (): void {
+    expect(ForecastWindowLimits::FORECAST_DAYS_MIN)->toBe(0)
+        ->and(ForecastWindowLimits::FORECAST_DAYS_MAX)->toBe(16)
+        ->and(ForecastWindowLimits::PAST_DAYS_MIN)->toBe(0)
+        ->and(ForecastWindowLimits::PAST_DAYS_MAX)->toBe(92)
+        ->and(ForecastWindowLimits::FORECAST_HOURS_MIN)->toBe(0)
+        ->and(ForecastWindowLimits::FORECAST_HOURS_MAX)->toBe(384)
+        ->and(ForecastWindowLimits::AIR_QUALITY_FORECAST_DAYS_MAX)->toBe(7)
+        ->and(ForecastWindowLimits::MARINE_FORECAST_DAYS_MAX)->toBe(16)
+        ->and(ForecastWindowLimits::ENSEMBLE_FORECAST_DAYS_MAX)->toBe(36)
+        ->and(ForecastWindowLimits::FLOOD_FORECAST_DAYS_MAX)->toBe(366)
+        ->and(ForecastWindowLimits::SEASONAL_FORECAST_DAYS_MAX)->toBe(217)
+        ->and(ForecastWindowLimits::ARCHIVE_FORECAST_DAYS_MAX)->toBe(0);
+
     $ensemble = GetEnsembleRequest::forCoordinates(52.37, 4.89)
         ->forecastDays(7)
         ->pastDays(1);
@@ -226,7 +239,29 @@ it('covers remaining forecast window ranges and validation', function (): void {
         ->and(fn () => GetEnsembleRequest::forCoordinates(52.37, 4.89)->forecastDays(ForecastWindowLimits::ENSEMBLE_FORECAST_DAYS_MAX + 1))
         ->toThrow(InvalidForecastParameterException::class, 'forecast_days must be between 0 and 36')
         ->and(fn () => GetFloodRequest::forCoordinates(52.37, 4.89)->pastDays(ForecastWindowLimits::PAST_DAYS_MAX + 1))
-        ->toThrow(InvalidForecastParameterException::class, 'past_days must be between 0 and 92');
+        ->toThrow(InvalidForecastParameterException::class, 'past_days must be between 0 and 92')
+        ->and(fn () => GetArchiveRequest::forCoordinates(52.37, 4.89)
+            ->between(new DateTimeImmutable('2024-06-01'), new DateTimeImmutable('2024-06-15'))
+            ->forecastDays(1))
+        ->toThrow(InvalidForecastParameterException::class, 'forecast_days must be between 0 and 0, 1 given.');
+
+    $archiveRange = (new ReflectionMethod(GetArchiveRequest::class, 'supportedForecastDaysRange'))
+        ->invoke(GetArchiveRequest::forCoordinates(52.37, 4.89));
+
+    expect($archiveRange)->toBe([0, 0]);
+});
+
+it('rejects sparse and invalid multi-point coordinate pairs', function (): void {
+    expect(fn () => GetElevationRequest::forPoints([[1 => 4.89]]))
+        ->toThrow(InvalidCoordinateException::class, 'Each coordinate pair must contain latitude and longitude.')
+        ->and(fn () => GetArchiveRequest::forPoints([[1 => 4.89]]))
+        ->toThrow(InvalidCoordinateException::class, 'Each coordinate pair must contain latitude and longitude.')
+        ->and(fn () => GetElevationRequest::forPoints([[91.0, 4.89]]))
+        ->toThrow(InvalidCoordinateException::class, 'latitude must be between')
+        ->and(fn () => GetElevationRequest::forPoints([[0.0, 181.0]]))
+        ->toThrow(InvalidCoordinateException::class, 'longitude must be between')
+        ->and(fn () => GetArchiveRequest::forPoints([[0.0, 181.0]]))
+        ->toThrow(InvalidCoordinateException::class, 'longitude must be between');
 });
 
 it('rejects malformed elevation point pairs', function (): void {

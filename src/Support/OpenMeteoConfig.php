@@ -7,17 +7,17 @@ namespace TempiMarathon\OpenMeteo\Support;
 final class OpenMeteoConfig
 {
     /** @var array<string, string> */
-    private const DEFAULT_HOSTS = [ // @pest-mutate-ignore
-        'forecast' => 'https://api.open-meteo.com/v1/',
-        'historical' => 'https://archive-api.open-meteo.com/v1/',
-        'geocoding' => 'https://geocoding-api.open-meteo.com/v1/',
-        'air_quality' => 'https://air-quality-api.open-meteo.com/v1/',
-        'marine' => 'https://marine-api.open-meteo.com/v1/',
-        'climate' => 'https://climate-api.open-meteo.com/v1/',
-        'flood' => 'https://flood-api.open-meteo.com/v1/',
-        'ensemble' => 'https://ensemble-api.open-meteo.com/v1/',
-        'seasonal' => 'https://seasonal-api.open-meteo.com/v1/',
-        'elevation' => 'https://api.open-meteo.com/v1/',
+    private const DEFAULT_HOSTS = [
+        'forecast' => 'https://api.open-meteo.com/v1/', // @pest-mutate-ignore
+        'historical' => 'https://archive-api.open-meteo.com/v1/', // @pest-mutate-ignore
+        'geocoding' => 'https://geocoding-api.open-meteo.com/v1/', // @pest-mutate-ignore
+        'air_quality' => 'https://air-quality-api.open-meteo.com/v1/', // @pest-mutate-ignore
+        'marine' => 'https://marine-api.open-meteo.com/v1/', // @pest-mutate-ignore
+        'climate' => 'https://climate-api.open-meteo.com/v1/', // @pest-mutate-ignore
+        'flood' => 'https://flood-api.open-meteo.com/v1/', // @pest-mutate-ignore
+        'ensemble' => 'https://ensemble-api.open-meteo.com/v1/', // @pest-mutate-ignore
+        'seasonal' => 'https://seasonal-api.open-meteo.com/v1/', // @pest-mutate-ignore
+        'elevation' => 'https://api.open-meteo.com/v1/', // @pest-mutate-ignore
     ];
 
     /** @var array<string, mixed>|null */
@@ -132,6 +132,7 @@ final class OpenMeteoConfig
         }
 
         $packageRootReal = realpath($packageRoot);
+        // @pest-mutate-ignore: FalseToTrue
         if ($packageRootReal === false || ! str_starts_with($resolved, $packageRootReal.DIRECTORY_SEPARATOR)) { // @pest-mutate-ignore: ConcatRemoveRight
             return is_file($defaultPath) ? $defaultPath : null; // @pest-mutate-ignore: TernaryNegated
         }

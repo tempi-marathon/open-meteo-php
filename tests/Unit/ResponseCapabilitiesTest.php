@@ -42,6 +42,36 @@ it('ignores non-array current payloads when building forecast responses', functi
         ->and($response->current()->count())->toBe(0);
 });
 
+it('ignores array-like non-array series and unit payloads that foreach could iterate', function (): void {
+    $response = timeSeriesResponseFromPayload(array_replace(forecastPayload(), [
+        'hourly' => new ArrayObject([
+            'time' => ['2026-07-06T12:00'],
+            'temperature_2m' => [21.5],
+        ]),
+        'daily' => new ArrayObject([
+            'time' => ['2026-07-06'],
+            'temperature_2m_max' => [24.0],
+        ]),
+        'current' => new ArrayObject([
+            'time' => '2026-07-06T12:00',
+            'temperature_2m' => 21.5,
+        ]),
+        'hourly_units' => new ArrayObject([
+            'temperature_2m' => '°C',
+        ]),
+        'daily_units' => new ArrayObject([
+            'temperature_2m_max' => '°C',
+        ]),
+    ]), ForecastResponse::class);
+
+    expect($response)->toBeInstanceOf(ForecastResponse::class)
+        ->and($response->hourly()->count())->toBe(0)
+        ->and($response->daily()->count())->toBe(0)
+        ->and($response->current()->count())->toBe(0)
+        ->and($response->units->hourlyUnits)->toBe([])
+        ->and($response->units->dailyUnits)->toBe([]);
+});
+
 it('parses seasonal weekly series from payloads', function (): void {
     $response = timeSeriesResponseFromPayload(array_replace(seasonalPayload(), [
         'weekly' => [

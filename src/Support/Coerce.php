@@ -17,7 +17,8 @@ final class Coerce
     public static function toFloat(mixed $value): float
     {
         if (is_int($value) || is_float($value)) {
-            return (float) $value; // @pest-mutate-ignore: RemoveDoubleCast - float return type already coerces int input
+            // @pest-mutate-ignore
+            return (float) $value;
         }
 
         if (is_string($value) && is_numeric($value)) {

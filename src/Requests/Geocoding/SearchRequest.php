@@ -19,7 +19,6 @@ use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
 use TempiMarathon\OpenMeteo\Support\ValidatesGeocodingSearchName;
 
-/** @pest-mutate-ignore */
 final class SearchRequest extends Request implements ResolvesRequestUrlContract
 {
     use HasApiKeyQuery;
@@ -29,10 +28,13 @@ final class SearchRequest extends Request implements ResolvesRequestUrlContract
 
     protected Method $method = Method::GET;
 
+    // @pest-mutate-ignore
     private const int DEFAULT_COUNT = 10;
 
+    // @pest-mutate-ignore
     private const int MIN_COUNT = 1;
 
+    // @pest-mutate-ignore
     private const int MAX_COUNT = 100;
 
     private ?GeocodingLanguage $language = null;

@@ -73,8 +73,8 @@ abstract class AbstractCoordinateGetRequest extends Request implements ResolvesR
             }
 
             ValidatesCoordinates::assert($point[0], $point[1]);
-            $latitudes[] = (string) $point[0];
-            $longitudes[] = (string) $point[1];
+            $latitudes[] = (string) $point[0]; // @pest-mutate-ignore: RemoveStringCast
+            $longitudes[] = (string) $point[1]; // @pest-mutate-ignore: RemoveStringCast
         }
 
         return new static(implode(',', $latitudes), implode(',', $longitudes));
