@@ -10,15 +10,24 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  tests:
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4', '8.5']
+        testbench: ['^10.0', '^11.0']
+
+    name: PHP ${{ matrix.php }} - Testbench ${{ matrix.testbench }}
+
     steps:
       - uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.5'
+          php-version: ${{ matrix.php }}
           extensions: pcov
           coverage: pcov
           tools: composer:v2
@@ -31,23 +40,44 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php${{ matrix.php }}-testbench${{ matrix.testbench }}-${{ hashFiles('**/composer.json') }}
           restore-keys: |
-            ${{ runner.os }}-composer-
+            ${{ runner.os }}-php${{ matrix.php }}-
+
+      - name: Constrain Testbench version
+        run: composer require --dev "orchestra/testbench:${{ matrix.testbench }}" --no-update
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: composer update --no-interaction --prefer-dist
 
       - name: Audit dependencies
-        run: composer audit --no-dev || true
+        run: composer audit
 
       - name: Run tests
         run: composer test
 
       - name: Run live smoke tests
+        if: matrix.php == '8.5' && matrix.testbench == '^11.0'
         run: vendor/bin/pest --group=live
         continue-on-error: true
 
       - name: Run mutation tests
-        run: composer test:infection
+        if: matrix.php == '8.5' && matrix.testbench == '^11.0'
+        run: composer test:mutation
         continue-on-error: true
+
+  # Single required status check that aggregates the matrix above, so branch
+  # protection can require "test" without listing every matrix combination.
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    needs: tests
+    if: always()
+    steps:
+      - name: Verify matrix result
+        run: |
+          if [ "${{ needs.tests.result }}" != "success" ]; then
+            echo "One or more matrix jobs failed: ${{ needs.tests.result }}"
+            exit 1
+          fi
+          echo "All matrix jobs succeeded."

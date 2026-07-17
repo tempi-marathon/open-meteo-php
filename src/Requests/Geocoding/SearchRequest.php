@@ -8,7 +8,6 @@ use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlContract;
-use TempiMarathon\OpenMeteo\Data\GeocodingLocation;
 use TempiMarathon\OpenMeteo\Data\GeocodingLocationCollection;
 use TempiMarathon\OpenMeteo\Enums\CountryCode;
 use TempiMarathon\OpenMeteo\Enums\Geocoding\GeocodingFormat;
@@ -19,10 +18,6 @@ use TempiMarathon\OpenMeteo\Support\ParsesGeocodingLocation;
 use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
 use TempiMarathon\OpenMeteo\Support\ValidatesGeocodingSearchName;
-
-use function Psl\Type\mixed_dict;
-use function Psl\Vec\filter;
-use function Psl\Vec\map;
 
 /** @pest-mutate-ignore */
 final class SearchRequest extends Request implements ResolvesRequestUrlContract
@@ -57,23 +52,26 @@ final class SearchRequest extends Request implements ResolvesRequestUrlContract
 
     public function language(GeocodingLanguage $language): static
     {
-        return clone ($this, [
-            'language' => $language,
-        ]);
+        $clone = clone $this;
+        $clone->language = $language;
+
+        return $clone;
     }
 
     public function countryCode(CountryCode $countryCode): static
     {
-        return clone ($this, [
-            'countryCode' => $countryCode,
-        ]);
+        $clone = clone $this;
+        $clone->countryCode = $countryCode;
+
+        return $clone;
     }
 
     public function format(GeocodingFormat $format): static
     {
-        return clone ($this, [
-            'format' => $format,
-        ]);
+        $clone = clone $this;
+        $clone->format = $format;
+
+        return $clone;
     }
 
     public function count(int $count): static
@@ -84,9 +82,10 @@ final class SearchRequest extends Request implements ResolvesRequestUrlContract
             );
         }
 
-        return clone ($this, [
-            'count' => $count,
-        ]);
+        $clone = clone $this;
+        $clone->count = $count;
+
+        return $clone;
     }
 
     public function resolveEndpoint(): string
@@ -125,12 +124,18 @@ final class SearchRequest extends Request implements ResolvesRequestUrlContract
             return new GeocodingLocationCollection([]);
         }
 
-        return new GeocodingLocationCollection(
-            map(
-                filter($results, static fn (mixed $result): bool => is_array($result)),
-                fn (mixed $result): GeocodingLocation => $this->parseGeocodingLocation(mixed_dict()->coerce($result)),
-            ),
-        );
+        $locations = [];
+        /** @var mixed $result */
+        foreach ($results as $result) {
+            if (! is_array($result)) {
+                continue;
+            }
+
+            /** @var array<int|string, mixed> $result */
+            $locations[] = $this->parseGeocodingLocation($result);
+        }
+
+        return new GeocodingLocationCollection($locations);
     }
 
     public function dto(): GeocodingLocationCollection

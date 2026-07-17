@@ -15,12 +15,6 @@ use TempiMarathon\OpenMeteo\Data\WeeklySeries;
 use TempiMarathon\OpenMeteo\Exceptions\MissingCurrentTimeException;
 use TempiMarathon\OpenMeteo\Exceptions\MissingSeriesTimeException;
 
-use function Psl\Type\int;
-use function Psl\Type\string;
-use function Psl\Type\vec;
-use function Psl\Vec\enumerate;
-use function Psl\Vec\map;
-
 trait BuildsSeries
 {
     /**
@@ -78,7 +72,7 @@ trait BuildsSeries
 
         $interval = null;
         if (isset($payload['interval'])) {
-            $interval = int()->coerce($payload['interval']);
+            $interval = Coerce::toInt($payload['interval']);
         }
 
         $values = [];
@@ -115,30 +109,34 @@ trait BuildsSeries
             throw new MissingSeriesTimeException;
         }
 
-        $times = vec(string())->coerce($payload['time']);
+        $times = [];
+        foreach ($payload['time'] as $value) {
+            $times[] = Coerce::toString($value);
+        }
+
         $variableKeys = array_values(array_filter( // @pest-mutate-ignore: UnwrapArrayFilter, UnwrapArrayValues
             array_keys($payload),
             static fn (string $key): bool => $key !== 'time',
         ));
 
-        return map(
-            enumerate($times),
-            function (array $entry) use ($payload, $variableKeys): SeriesPoint {
-                $values = [];
-                foreach ($variableKeys as $key) {
-                    if (! array_key_exists($entry[0], $payload[$key])) {
-                        continue;
-                    }
-
-                    $values[$key] = CoercesVariableValues::coerce($key, $payload[$key][$entry[0]]);
+        $points = [];
+        foreach ($times as $index => $time) {
+            $values = [];
+            foreach ($variableKeys as $key) {
+                if (! array_key_exists($index, $payload[$key])) {
+                    continue;
                 }
 
-                return new SeriesPoint(
-                    datetime: new DateTimeImmutable($entry[1]),
-                    values: $values,
-                );
-            },
-        );
+                $values[$key] = CoercesVariableValues::coerce($key, $payload[$key][$index]);
+            }
+
+            $points[] = new SeriesPoint(
+                datetime: new DateTimeImmutable($time),
+                values: $values,
+            );
+        }
+
+        return $points;
     }
 
     /**

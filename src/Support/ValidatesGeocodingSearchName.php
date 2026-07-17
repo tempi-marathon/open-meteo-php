@@ -6,9 +6,6 @@ namespace TempiMarathon\OpenMeteo\Support;
 
 use TempiMarathon\OpenMeteo\Exceptions\InvalidGeocodingSearchException;
 
-use function Psl\Str\length;
-use function Psl\Str\trim;
-
 /** @pest-mutate-ignore */
 final class ValidatesGeocodingSearchName
 {
@@ -21,9 +18,10 @@ final class ValidatesGeocodingSearchName
             throw new InvalidGeocodingSearchException('name must not be empty.');
         }
 
-        if (length($name) > self::MAX_LENGTH) {
+        $length = mb_strlen($name);
+        if ($length > self::MAX_LENGTH) {
             throw new InvalidGeocodingSearchException(
-                sprintf('name must not exceed %d characters, %d given.', self::MAX_LENGTH, length($name)),
+                sprintf('name must not exceed %d characters, %d given.', self::MAX_LENGTH, $length),
             );
         }
 

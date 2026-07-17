@@ -6,7 +6,7 @@ namespace TempiMarathon\OpenMeteo\Exceptions;
 
 use LogicException;
 
-final class ResolvesRequestUrlMisuseException extends LogicException
+final class ResolvesRequestUrlMisuseException extends LogicException implements OpenMeteoException
 {
     public function __construct()
     {

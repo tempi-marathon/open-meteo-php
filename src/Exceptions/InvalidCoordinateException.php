@@ -6,4 +6,4 @@ namespace TempiMarathon\OpenMeteo\Exceptions;
 
 use InvalidArgumentException;
 
-final class InvalidCoordinateException extends InvalidArgumentException {}
+final class InvalidCoordinateException extends InvalidArgumentException implements OpenMeteoException {}

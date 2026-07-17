@@ -8,13 +8,6 @@ use TempiMarathon\OpenMeteo\Data\GeocodingLocation;
 use TempiMarathon\OpenMeteo\Enums\CountryCode;
 use TempiMarathon\OpenMeteo\Enums\Timezone;
 
-use function Psl\Type\float;
-use function Psl\Type\int;
-use function Psl\Type\optional;
-use function Psl\Type\shape;
-use function Psl\Type\string;
-use function Psl\Type\vec;
-
 trait ParsesGeocodingLocation
 {
     /**
@@ -22,55 +15,32 @@ trait ParsesGeocodingLocation
      */
     protected function parseGeocodingLocation(array $data): GeocodingLocation
     {
-        $item = shape([
-            'id' => int(),
-            'name' => string(),
-            'latitude' => float(),
-            'longitude' => float(),
-            'timezone' => string(),
-            'elevation' => optional(float()),
-            'feature_code' => optional(string()),
-            'country_code' => optional(string()),
-            'country' => optional(string()),
-            'country_id' => optional(int()),
-            'population' => optional(int()),
-            'postcodes' => optional(vec(string())),
-            'admin1' => optional(string()),
-            'admin2' => optional(string()),
-            'admin3' => optional(string()),
-            'admin4' => optional(string()),
-            'admin1_id' => optional(int()),
-            'admin2_id' => optional(int()),
-            'admin3_id' => optional(int()),
-            'admin4_id' => optional(int()),
-        ])->coerce($data);
-
-        $timezone = Timezone::tryFrom($item['timezone']) ?? Timezone::GMT;
-        $countryCode = isset($item['country_code'])
-            ? CountryCode::tryFrom($item['country_code'])
+        $timezone = Timezone::tryFrom(Coerce::toString($data['timezone'] ?? null)) ?? Timezone::GMT;
+        $countryCode = isset($data['country_code'])
+            ? CountryCode::tryFrom(Coerce::toString($data['country_code']))
             : null;
 
         return new GeocodingLocation(
-            id: $item['id'],
-            name: $item['name'],
-            latitude: $item['latitude'],
-            longitude: $item['longitude'],
-            elevation: $item['elevation'] ?? null,
+            id: Coerce::toInt($data['id'] ?? null),
+            name: Coerce::toString($data['name'] ?? null),
+            latitude: Coerce::toFloat($data['latitude'] ?? null),
+            longitude: Coerce::toFloat($data['longitude'] ?? null),
+            elevation: isset($data['elevation']) ? Coerce::toFloat($data['elevation']) : null,
             timezone: $timezone,
-            featureCode: $item['feature_code'] ?? null,
+            featureCode: isset($data['feature_code']) ? Coerce::toString($data['feature_code']) : null,
             countryCode: $countryCode,
-            country: $item['country'] ?? null,
-            countryId: $item['country_id'] ?? null,
-            population: $item['population'] ?? null,
-            postcodes: $item['postcodes'] ?? [],
-            admin1: $item['admin1'] ?? null,
-            admin2: $item['admin2'] ?? null,
-            admin3: $item['admin3'] ?? null,
-            admin4: $item['admin4'] ?? null,
-            admin1Id: $item['admin1_id'] ?? null,
-            admin2Id: $item['admin2_id'] ?? null,
-            admin3Id: $item['admin3_id'] ?? null,
-            admin4Id: $item['admin4_id'] ?? null,
+            country: isset($data['country']) ? Coerce::toString($data['country']) : null,
+            countryId: isset($data['country_id']) ? Coerce::toInt($data['country_id']) : null,
+            population: isset($data['population']) ? Coerce::toInt($data['population']) : null,
+            postcodes: isset($data['postcodes']) ? Coerce::toStringList($data['postcodes']) : [],
+            admin1: isset($data['admin1']) ? Coerce::toString($data['admin1']) : null,
+            admin2: isset($data['admin2']) ? Coerce::toString($data['admin2']) : null,
+            admin3: isset($data['admin3']) ? Coerce::toString($data['admin3']) : null,
+            admin4: isset($data['admin4']) ? Coerce::toString($data['admin4']) : null,
+            admin1Id: isset($data['admin1_id']) ? Coerce::toInt($data['admin1_id']) : null,
+            admin2Id: isset($data['admin2_id']) ? Coerce::toInt($data['admin2_id']) : null,
+            admin3Id: isset($data['admin3_id']) ? Coerce::toInt($data['admin3_id']) : null,
+            admin4Id: isset($data['admin4_id']) ? Coerce::toInt($data['admin4_id']) : null,
         );
     }
 }

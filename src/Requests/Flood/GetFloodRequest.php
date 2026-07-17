@@ -12,8 +12,6 @@ use TempiMarathon\OpenMeteo\Requests\AbstractCoordinateGetRequest;
 use TempiMarathon\OpenMeteo\Support\ForecastWindowLimits;
 use TempiMarathon\OpenMeteo\Support\JoinsQueryEnumValues;
 
-use function Psl\Vec\values;
-
 final class GetFloodRequest extends AbstractCoordinateGetRequest
 {
     use JoinsQueryEnumValues;
@@ -25,16 +23,18 @@ final class GetFloodRequest extends AbstractCoordinateGetRequest
 
     public function daily(FloodDailyVariable ...$variables): static
     {
-        return clone ($this, [
-            'daily' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->daily = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function ensemble(bool $ensemble = true): static
     {
-        return clone ($this, [
-            'ensemble' => $ensemble,
-        ]);
+        $clone = clone $this;
+        $clone->ensemble = $ensemble;
+
+        return $clone;
     }
 
     protected function supportedForecastDaysRange(): array

@@ -6,7 +6,7 @@ namespace TempiMarathon\OpenMeteo\Exceptions;
 
 use UnexpectedValueException;
 
-final class InvalidForecastSegmentException extends UnexpectedValueException
+final class InvalidForecastSegmentException extends UnexpectedValueException implements OpenMeteoException
 {
     public function __construct()
     {

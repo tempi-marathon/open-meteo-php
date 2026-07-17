@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Psl\Type\Exception\CoercionException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\PendingRequest;
 use Saloon\Http\Response;
@@ -25,6 +24,7 @@ use TempiMarathon\OpenMeteo\Enums\MarineCurrentVariable;
 use TempiMarathon\OpenMeteo\Enums\MarineMinutely15Variable;
 use TempiMarathon\OpenMeteo\Enums\MonthlyVariable;
 use TempiMarathon\OpenMeteo\Exceptions\InvalidCoordinateException;
+use TempiMarathon\OpenMeteo\Exceptions\MalformedPayloadException;
 use TempiMarathon\OpenMeteo\Requests\AirQuality\GetAirQualityRequest;
 use TempiMarathon\OpenMeteo\Requests\Climate\GetClimateRequest;
 use TempiMarathon\OpenMeteo\Requests\Elevation\GetElevationRequest;
@@ -236,7 +236,7 @@ it('throws when elevation values are malformed', function (): void {
     );
 
     expect(fn () => $request->createDtoFromResponse($response))
-        ->toThrow(CoercionException::class);
+        ->toThrow(MalformedPayloadException::class);
 });
 
 it('builds elevation query from coordinates', function (): void {

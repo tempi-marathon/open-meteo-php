@@ -6,7 +6,7 @@ namespace TempiMarathon\OpenMeteo\Exceptions;
 
 use LogicException;
 
-final class DebugUrlNotSupportedException extends LogicException
+final class DebugUrlNotSupportedException extends LogicException implements OpenMeteoException
 {
     public function __construct()
     {

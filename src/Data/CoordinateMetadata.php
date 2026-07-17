@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace TempiMarathon\OpenMeteo\Data;
 
-use function Psl\Type\float;
-use function Psl\Type\int;
-use function Psl\Type\string;
+use TempiMarathon\OpenMeteo\Support\Coerce;
 
 final readonly class CoordinateMetadata
 {
@@ -23,10 +21,10 @@ final readonly class CoordinateMetadata
     public static function fromPayload(array $data): self
     {
         return new self(
-            elevation: isset($data['elevation']) ? float()->coerce($data['elevation']) : null,
-            generationTimeMs: isset($data['generationtime_ms']) ? float()->coerce($data['generationtime_ms']) : null,
-            utcOffsetSeconds: isset($data['utc_offset_seconds']) ? int()->coerce($data['utc_offset_seconds']) : null,
-            timezoneAbbreviation: isset($data['timezone_abbreviation']) ? string()->coerce($data['timezone_abbreviation']) : null,
+            elevation: isset($data['elevation']) ? Coerce::toFloat($data['elevation']) : null,
+            generationTimeMs: isset($data['generationtime_ms']) ? Coerce::toFloat($data['generationtime_ms']) : null,
+            utcOffsetSeconds: isset($data['utc_offset_seconds']) ? Coerce::toInt($data['utc_offset_seconds']) : null,
+            timezoneAbbreviation: isset($data['timezone_abbreviation']) ? Coerce::toString($data['timezone_abbreviation']) : null,
         );
     }
 }

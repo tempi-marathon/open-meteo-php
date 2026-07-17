@@ -100,7 +100,9 @@ it('leaves invalid and already customer urls unchanged when transforming', funct
 
     expect($toCustomerHost('not-a-valid-url'))->toBe('not-a-valid-url')
         ->and($toCustomerHost('https://customer-api.open-meteo.com/v1/'))
-        ->toBe('https://customer-api.open-meteo.com/v1/');
+        ->toBe('https://customer-api.open-meteo.com/v1/')
+        ->and($toCustomerHost('https://CUSTOMER-api.open-meteo.com/v1/'))
+        ->toBe('https://CUSTOMER-api.open-meteo.com/v1/');
 });
 
 it('ignores empty configured api keys and user agents', function (): void {
@@ -125,11 +127,13 @@ it('preserves host url components when switching to customer endpoints', functio
 });
 
 it('rejects invalid and insecure host urls from config resolution', function (): void {
-    $isAllowedHostUrl = (new ReflectionMethod(OpenMeteoConfig::class, 'isAllowedHostUrl'))->getClosure();
+    $isAllowedHostUrl = (new ReflectionMethod(OpenMeteoConfig::class, 'isAllowedFileHostUrl'))->getClosure();
 
     expect($isAllowedHostUrl('not-a-valid-url'))->toBeFalse()
         ->and($isAllowedHostUrl('http://api.open-meteo.com/v1/'))->toBeFalse()
-        ->and($isAllowedHostUrl('https://127.0.0.1/v1/'))->toBeTrue();
+        ->and($isAllowedHostUrl('https://127.0.0.1/v1/'))->toBeTrue()
+        ->and($isAllowedHostUrl('HTTPS://api.open-meteo.com/v1/'))->toBeTrue()
+        ->and($isAllowedHostUrl('https://OPEN-METEO.COM/v1/'))->toBeTrue();
 });
 
 it('falls back when configured path is blank', function (): void {
@@ -138,6 +142,19 @@ it('falls back when configured path is blank', function (): void {
 
     expect(OpenMeteoConfig::apiKey())->toBeNull();
 
+    putenv('OPENMETEO_CONFIG_PATH');
+});
+
+it('ignores config entirely when the configured path cannot be resolved', function (): void {
+    OpenMeteoConfig::reset();
+    // If the configured path does not resolve we must return null rather than
+    // silently falling back to the packaged default (which would read env keys).
+    putenv('OPENMETEO_API_KEY=env-fallback-key');
+    putenv('OPENMETEO_CONFIG_PATH='.sys_get_temp_dir().'/definitely-missing-open-meteo.php');
+
+    expect(OpenMeteoConfig::apiKey())->toBeNull();
+
+    putenv('OPENMETEO_API_KEY');
     putenv('OPENMETEO_CONFIG_PATH');
 });
 

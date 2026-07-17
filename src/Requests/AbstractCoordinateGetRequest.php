@@ -24,8 +24,6 @@ use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
 use TempiMarathon\OpenMeteo\Support\ValidatesCoordinates;
 
-use function Psl\Str\join;
-
 abstract class AbstractCoordinateGetRequest extends Request implements ResolvesRequestUrlContract
 {
     use BuildsCoordinateQuery;
@@ -79,7 +77,7 @@ abstract class AbstractCoordinateGetRequest extends Request implements ResolvesR
             $longitudes[] = (string) $point[1];
         }
 
-        return new static(join($latitudes, ','), join($longitudes, ','));
+        return new static(implode(',', $latitudes), implode(',', $longitudes));
     }
 
     protected function requiresDateRange(): bool

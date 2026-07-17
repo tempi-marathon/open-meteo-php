@@ -14,8 +14,6 @@ use TempiMarathon\OpenMeteo\Requests\AbstractCoordinateGetRequest;
 use TempiMarathon\OpenMeteo\Support\ForecastWindowLimits;
 use TempiMarathon\OpenMeteo\Support\JoinsQueryEnumValues;
 
-use function Psl\Vec\values;
-
 final class GetAirQualityRequest extends AbstractCoordinateGetRequest
 {
     use JoinsQueryEnumValues;
@@ -30,23 +28,26 @@ final class GetAirQualityRequest extends AbstractCoordinateGetRequest
 
     public function hourly(AirQualityHourlyVariable ...$variables): static
     {
-        return clone ($this, [
-            'hourly' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->hourly = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function current(AirQualityCurrentVariable ...$variables): static
     {
-        return clone ($this, [
-            'current' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->current = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function domains(AirQualityDomain $domains): static
     {
-        return clone ($this, [
-            'domains' => $domains,
-        ]);
+        $clone = clone $this;
+        $clone->domains = $domains;
+
+        return $clone;
     }
 
     protected function supportedForecastDaysRange(): array

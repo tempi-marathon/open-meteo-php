@@ -13,14 +13,11 @@ use TempiMarathon\OpenMeteo\Contracts\ResolvesRequestUrl as ResolvesRequestUrlCo
 use TempiMarathon\OpenMeteo\Data\ElevationResponse;
 use TempiMarathon\OpenMeteo\Exceptions\InvalidCoordinateException;
 use TempiMarathon\OpenMeteo\Support\BuildsCoordinateQuery;
+use TempiMarathon\OpenMeteo\Support\Coerce;
 use TempiMarathon\OpenMeteo\Support\HasApiKeyQuery;
 use TempiMarathon\OpenMeteo\Support\ResolvesRequestUrl;
 use TempiMarathon\OpenMeteo\Support\SendsThroughConnector;
 use TempiMarathon\OpenMeteo\Support\ValidatesCoordinates;
-
-use function Psl\Str\join;
-use function Psl\Type\float;
-use function Psl\Type\vec;
 
 final class GetElevationRequest extends Request implements ResolvesRequestUrlContract
 {
@@ -65,7 +62,7 @@ final class GetElevationRequest extends Request implements ResolvesRequestUrlCon
             $longitudes[] = (string) $point[1];
         }
 
-        return new self(join($latitudes, ','), join($longitudes, ','));
+        return new self(implode(',', $latitudes), implode(',', $longitudes));
     }
 
     public function resolveEndpoint(): string
@@ -85,7 +82,7 @@ final class GetElevationRequest extends Request implements ResolvesRequestUrlCon
     {
         /** @var array<string, mixed> $data */
         $data = $response->json();
-        $elevation = vec(float())->coerce($data['elevation'] ?? []);
+        $elevation = Coerce::toFloatList($data['elevation'] ?? []);
 
         return new ElevationResponse(elevation: $elevation);
     }

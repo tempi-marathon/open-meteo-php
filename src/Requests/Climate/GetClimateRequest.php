@@ -11,8 +11,6 @@ use TempiMarathon\OpenMeteo\Enums\ClimateDailyVariable;
 use TempiMarathon\OpenMeteo\Requests\AbstractCoordinateGetRequest;
 use TempiMarathon\OpenMeteo\Support\JoinsQueryEnumValues;
 
-use function Psl\Vec\values;
-
 final class GetClimateRequest extends AbstractCoordinateGetRequest
 {
     use JoinsQueryEnumValues;
@@ -24,16 +22,18 @@ final class GetClimateRequest extends AbstractCoordinateGetRequest
 
     public function daily(ClimateDailyVariable ...$variables): static
     {
-        return clone ($this, [
-            'daily' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->daily = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function disableBiasCorrection(bool $disableBiasCorrection = true): static
     {
-        return clone ($this, [
-            'disableBiasCorrection' => $disableBiasCorrection,
-        ]);
+        $clone = clone $this;
+        $clone->disableBiasCorrection = $disableBiasCorrection;
+
+        return $clone;
     }
 
     protected function requiresDateRange(): bool

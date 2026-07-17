@@ -181,6 +181,28 @@ it('accepts search count boundaries', function (): void {
         ->and($maxQuery['count'])->toBe('100');
 });
 
+it('skips non-array entries in the results list', function (): void {
+    MockClient::global([
+        SearchRequest::class => mockOk([
+            'results' => [
+                'not-an-array',
+                [
+                    'id' => 1,
+                    'name' => 'Test',
+                    'latitude' => 1.0,
+                    'longitude' => 2.0,
+                    'timezone' => 'GMT',
+                ],
+            ],
+        ]),
+    ]);
+
+    $collection = (new GeocodingConnector)->locations()->search('Test')->dto();
+
+    expect($collection->count())->toBe(1)
+        ->and($collection->first()?->name)->toBe('Test');
+});
+
 it('returns empty collection when results are missing', function (): void {
     MockClient::global([
         SearchRequest::class => mockOk([]),

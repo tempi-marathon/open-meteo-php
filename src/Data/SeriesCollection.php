@@ -9,10 +9,6 @@ use DateTimeInterface;
 use IteratorAggregate;
 use Traversable;
 
-use function Psl\Iter\is_empty;
-use function Psl\Iter\reduce;
-use function Psl\Math\abs;
-
 /** @implements IteratorAggregate<int, SeriesPoint> */
 abstract readonly class SeriesCollection implements Countable, IteratorAggregate
 {
@@ -43,19 +39,20 @@ abstract readonly class SeriesCollection implements Countable, IteratorAggregate
 
     public function closestTo(DateTimeInterface $target): ?SeriesPoint
     {
-        if (is_empty($this->points)) {
+        if ($this->points === []) {
             return null; // @pest-mutate-ignore: RemoveEarlyReturn
         }
 
-        return reduce(
-            $this->points,
-            static function (SeriesPoint $closest, SeriesPoint $point) use ($target): SeriesPoint {
-                $currentDiff = abs($closest->datetime->getTimestamp() - $target->getTimestamp());
-                $pointDiff = abs($point->datetime->getTimestamp() - $target->getTimestamp());
+        $closest = $this->points[0];
+        foreach ($this->points as $point) {
+            $currentDiff = abs($closest->datetime->getTimestamp() - $target->getTimestamp());
+            $pointDiff = abs($point->datetime->getTimestamp() - $target->getTimestamp());
 
-                return $pointDiff < $currentDiff ? $point : $closest;
-            },
-            $this->points[0],
-        );
+            if ($pointDiff < $currentDiff) {
+                $closest = $point;
+            }
+        }
+
+        return $closest;
     }
 }

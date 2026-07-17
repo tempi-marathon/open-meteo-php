@@ -6,7 +6,7 @@ namespace TempiMarathon\OpenMeteo\Exceptions;
 
 use InvalidArgumentException;
 
-final class UnsupportedResponseClassException extends InvalidArgumentException
+final class UnsupportedResponseClassException extends InvalidArgumentException implements OpenMeteoException
 {
     public function __construct(string $responseClass)
     {

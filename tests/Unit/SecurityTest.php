@@ -71,6 +71,64 @@ it('allows trusted host overrides from configure', function (): void {
     OpenMeteoConfig::reset();
 });
 
+it('rejects non-https trusted host overrides', function (): void {
+    OpenMeteoConfig::configure([
+        'hosts' => ['forecast' => 'http://custom.example/v1/'],
+    ]);
+
+    expect(OpenMeteoConfig::host('forecast', 'https://api.open-meteo.com/v1/'))
+        ->toBe('https://api.open-meteo.com/v1/');
+
+    OpenMeteoConfig::reset();
+});
+
+it('rejects malformed trusted host overrides', function (): void {
+    OpenMeteoConfig::configure([
+        'hosts' => ['forecast' => 'not-a-valid-url'],
+    ]);
+
+    expect(OpenMeteoConfig::host('forecast', 'https://api.open-meteo.com/v1/'))
+        ->toBe('https://api.open-meteo.com/v1/');
+
+    OpenMeteoConfig::reset();
+});
+
+it('allows non-https loopback trusted host overrides for local development', function (): void {
+    // Uppercase host also exercises the case-insensitive loopback comparison.
+    OpenMeteoConfig::configure([
+        'hosts' => ['forecast' => 'http://LOCALHOST:8080/v1/'],
+    ]);
+
+    expect(OpenMeteoConfig::host('forecast', 'https://api.open-meteo.com/v1/'))
+        ->toBe('http://LOCALHOST:8080/v1/');
+
+    OpenMeteoConfig::reset();
+});
+
+it('accepts trusted host overrides with an uppercase https scheme', function (): void {
+    OpenMeteoConfig::configure([
+        'hosts' => ['forecast' => 'HTTPS://custom.example/v1/'],
+    ]);
+
+    expect(OpenMeteoConfig::host('forecast', 'https://api.open-meteo.com/v1/'))
+        ->toBe('HTTPS://custom.example/v1/');
+
+    OpenMeteoConfig::reset();
+});
+
+it('resolves configuration through a registered resolver', function (): void {
+    OpenMeteoConfig::resolveUsing(static fn (): array => [
+        'apikey' => 'resolver-key',
+        'hosts' => ['forecast' => 'https://custom.example/v1/'],
+    ]);
+
+    expect(OpenMeteoConfig::apiKey())->toBe('resolver-key')
+        ->and(OpenMeteoConfig::host('forecast', 'https://api.open-meteo.com/v1/'))
+        ->toBe('https://custom.example/v1/');
+
+    OpenMeteoConfig::reset();
+});
+
 it('rejects non-https hosts from config files', function (): void {
     OpenMeteoConfig::reset();
     putenv('OPENMETEO_CONFIG_PATH='.dirname(__DIR__).'/Fixtures/http-openmeteo-config.php');

@@ -12,7 +12,7 @@ composer test
 For mutation testing:
 
 ```bash
-composer test:infection
+composer test:mutation
 ```
 
 ## Why not Saloon SDK Generator?

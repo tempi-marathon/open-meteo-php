@@ -6,4 +6,4 @@ namespace TempiMarathon\OpenMeteo\Exceptions;
 
 use InvalidArgumentException;
 
-final class InvalidForecastParameterException extends InvalidArgumentException {}
+final class InvalidForecastParameterException extends InvalidArgumentException implements OpenMeteoException {}

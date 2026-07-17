@@ -6,7 +6,7 @@ namespace TempiMarathon\OpenMeteo\Exceptions;
 
 use Exception;
 
-final class OpenMeteoRequestException extends Exception
+final class OpenMeteoRequestException extends Exception implements OpenMeteoException
 {
     public function __construct(
         private readonly ?string $reason,

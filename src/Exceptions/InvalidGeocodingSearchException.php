@@ -6,4 +6,4 @@ namespace TempiMarathon\OpenMeteo\Exceptions;
 
 use InvalidArgumentException;
 
-final class InvalidGeocodingSearchException extends InvalidArgumentException {}
+final class InvalidGeocodingSearchException extends InvalidArgumentException implements OpenMeteoException {}

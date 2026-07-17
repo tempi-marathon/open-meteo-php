@@ -6,8 +6,6 @@ namespace TempiMarathon\OpenMeteo\Support;
 
 use BackedEnum;
 
-use function Psl\Str\lowercase;
-
 final class ConvertsApiKeys
 {
     /** @var array<string, string> */
@@ -19,10 +17,10 @@ final class ConvertsApiKeys
 
     public static function propertyToApiKey(string $property): string
     {
-        return $property
-            |> (fn (string $key): string => preg_replace('/(?<!^)[A-Z]/', '_$0', $key) ?? $key)
-            |> lowercase(...)
-            |> (fn (string $key): string => preg_replace('/([a-z])(\d)/', '$1_$2', $key) ?? $key);
+        $key = preg_replace('/(?<!^)[A-Z]/', '_$0', $property) ?? $property;
+        $key = strtolower($key);
+
+        return preg_replace('/([a-z])(\d)/', '$1_$2', $key) ?? $key;
     }
 
     /**

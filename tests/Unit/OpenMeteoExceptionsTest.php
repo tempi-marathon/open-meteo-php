@@ -10,10 +10,13 @@ use TempiMarathon\OpenMeteo\Exceptions\InvalidForecastParameterException;
 use TempiMarathon\OpenMeteo\Exceptions\InvalidForecastSegmentException;
 use TempiMarathon\OpenMeteo\Exceptions\InvalidGeocodingCountException;
 use TempiMarathon\OpenMeteo\Exceptions\InvalidGeocodingSearchException;
+use TempiMarathon\OpenMeteo\Exceptions\MalformedPayloadException;
 use TempiMarathon\OpenMeteo\Exceptions\MissingCurrentTimeException;
 use TempiMarathon\OpenMeteo\Exceptions\MissingDateRangeException;
 use TempiMarathon\OpenMeteo\Exceptions\MissingSeriesTimeException;
 use TempiMarathon\OpenMeteo\Exceptions\MultiCoordinateResponseException;
+use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoException;
+use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoRequestException;
 use TempiMarathon\OpenMeteo\Exceptions\ResolvesRequestUrlMisuseException;
 use TempiMarathon\OpenMeteo\Exceptions\UnexpectedDtoException;
 use TempiMarathon\OpenMeteo\Exceptions\UnsupportedResponseClassException;
@@ -26,14 +29,50 @@ covers(
     InvalidForecastSegmentException::class,
     InvalidGeocodingCountException::class,
     InvalidGeocodingSearchException::class,
+    MalformedPayloadException::class,
     MissingDateRangeException::class,
     MultiCoordinateResponseException::class,
     MissingCurrentTimeException::class,
     MissingSeriesTimeException::class,
+    OpenMeteoRequestException::class,
     ResolvesRequestUrlMisuseException::class,
     UnsupportedResponseClassException::class,
     UnexpectedDtoException::class,
 );
+
+it('marks every sdk exception with the shared OpenMeteoException contract', function (string $exceptionClass): void {
+    expect(is_subclass_of($exceptionClass, OpenMeteoException::class))->toBeTrue()
+        ->and(is_subclass_of($exceptionClass, Throwable::class))->toBeTrue();
+})->with([
+    ConnectorNotConfiguredException::class,
+    DebugUrlNotSupportedException::class,
+    InvalidCoordinateException::class,
+    InvalidForecastParameterException::class,
+    InvalidForecastSegmentException::class,
+    InvalidGeocodingCountException::class,
+    InvalidGeocodingSearchException::class,
+    MalformedPayloadException::class,
+    MissingCurrentTimeException::class,
+    MissingDateRangeException::class,
+    MissingSeriesTimeException::class,
+    MultiCoordinateResponseException::class,
+    OpenMeteoRequestException::class,
+    ResolvesRequestUrlMisuseException::class,
+    UnexpectedDtoException::class,
+    UnsupportedResponseClassException::class,
+]);
+
+it('can be caught through the shared OpenMeteoException contract', function (): void {
+    $caught = null;
+
+    try {
+        throw new InvalidCoordinateException('boom');
+    } catch (OpenMeteoException $exception) {
+        $caught = $exception;
+    }
+
+    expect($caught)->toBeInstanceOf(InvalidCoordinateException::class);
+});
 
 it('exposes stable messages for parameterless sdk exceptions', function (string $exceptionClass, string $message): void {
     $exception = new $exceptionClass;
@@ -64,14 +103,14 @@ it('formats unexpected dto exceptions', function (): void {
 });
 
 it('accepts custom invalid argument messages', function (): void {
-    expect(new InvalidCoordinateException('latitude must be between -90 and 90, 100 given.')->getMessage())
+    expect((new InvalidCoordinateException('latitude must be between -90 and 90, 100 given.'))->getMessage())
         ->toBe('latitude must be between -90 and 90, 100 given.')
-        ->and(new InvalidGeocodingSearchException('name must not be empty.')->getMessage())
+        ->and((new InvalidGeocodingSearchException('name must not be empty.'))->getMessage())
         ->toBe('name must not be empty.')
-        ->and(new InvalidGeocodingCountException('count must be between 1 and 100, 0 given.')->getMessage())
+        ->and((new InvalidGeocodingCountException('count must be between 1 and 100, 0 given.'))->getMessage())
         ->toBe('count must be between 1 and 100, 0 given.')
-        ->and(new InvalidForecastParameterException('forecast_days must be between 0 and 16, 17 given.')->getMessage())
+        ->and((new InvalidForecastParameterException('forecast_days must be between 0 and 16, 17 given.'))->getMessage())
         ->toBe('forecast_days must be between 0 and 16, 17 given.')
-        ->and(new MissingDateRangeException('start_date and end_date are required for this endpoint.')->getMessage())
+        ->and((new MissingDateRangeException('start_date and end_date are required for this endpoint.'))->getMessage())
         ->toBe('start_date and end_date are required for this endpoint.');
 });

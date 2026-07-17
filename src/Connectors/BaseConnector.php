@@ -13,8 +13,6 @@ use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoRequestException;
 use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 use Throwable;
 
-use function Psl\Iter\contains;
-
 /** @pest-mutate-ignore */
 abstract class BaseConnector extends Connector
 {
@@ -45,7 +43,7 @@ abstract class BaseConnector extends Connector
             return false;
         }
 
-        return contains([408, 425, 429, 500, 502, 503, 504], $exception->getResponse()->status());
+        return in_array($exception->getResponse()->status(), [408, 425, 429, 500, 502, 503, 504], true);
     }
 
     public function getRequestException(Response $response, ?Throwable $senderException): ?Throwable

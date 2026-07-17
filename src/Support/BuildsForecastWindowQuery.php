@@ -67,9 +67,10 @@ trait BuildsForecastWindowQuery
             );
         }
 
-        return clone ($this, [
-            'forecastDays' => $forecastDays,
-        ]);
+        $clone = clone $this;
+        $clone->forecastDays = $forecastDays;
+
+        return $clone;
     }
 
     public function pastDays(int $pastDays): static
@@ -86,9 +87,10 @@ trait BuildsForecastWindowQuery
             );
         }
 
-        return clone ($this, [
-            'pastDays' => $pastDays,
-        ]);
+        $clone = clone $this;
+        $clone->pastDays = $pastDays;
+
+        return $clone;
     }
 
     public function forecastHours(int $forecastHours): static
@@ -105,9 +107,10 @@ trait BuildsForecastWindowQuery
             );
         }
 
-        return clone ($this, [
-            'forecastHours' => $forecastHours,
-        ]);
+        $clone = clone $this;
+        $clone->forecastHours = $forecastHours;
+
+        return $clone;
     }
 
     public function pastHours(int $pastHours): static
@@ -124,9 +127,10 @@ trait BuildsForecastWindowQuery
             );
         }
 
-        return clone ($this, [
-            'pastHours' => $pastHours,
-        ]);
+        $clone = clone $this;
+        $clone->pastHours = $pastHours;
+
+        return $clone;
     }
 
     /**
