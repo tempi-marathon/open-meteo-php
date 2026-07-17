@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 namespace TempiMarathon\OpenMeteo\Support;
 
-use function Psl\Filesystem\canonicalize;
-use function Psl\Filesystem\exists;
-use function Psl\Iter\contains;
-use function Psl\Str\ends_with;
-use function Psl\Str\lowercase;
-use function Psl\Str\starts_with;
-
 final class OpenMeteoConfig
 {
     /** @var array<string, string> */
@@ -30,15 +23,32 @@ final class OpenMeteoConfig
     /** @var array<string, mixed>|null */
     private static ?array $config = null;
 
+    /** @var (callable(): array<string, mixed>)|null */
+    private static $resolver = null;
+
     /** @param array<string, mixed> $config */
     public static function configure(array $config): void
     {
         self::$config = $config;
     }
 
+    /**
+     * Register a callback that returns the current configuration on demand.
+     *
+     * Used by the Laravel integration to read live `config('openmeteo')` on
+     * every request, which keeps the SDK correct under Octane and queue workers.
+     *
+     * @param  (callable(): array<string, mixed>)|null  $resolver
+     */
+    public static function resolveUsing(?callable $resolver): void
+    {
+        self::$resolver = $resolver;
+    }
+
     public static function reset(): void
     {
         self::$config = null;
+        self::$resolver = null;
     }
 
     public static function host(string $key, string $default): string
@@ -48,9 +58,9 @@ final class OpenMeteoConfig
         $hosts = $config['hosts'] ?? [];
         $url = $hosts[$key] ?? $default;
 
-        if (self::$config === null) {
-            $url = self::isAllowedHostUrl($url) ? $url : $default;
-        }
+        $url = self::isTrustedSource()
+            ? (self::isAllowedTrustedHostUrl($url) ? $url : $default)
+            : (self::isAllowedFileHostUrl($url) ? $url : $default);
 
         return self::resolveCommercialHost($url, $key);
     }
@@ -69,11 +79,26 @@ final class OpenMeteoConfig
         return is_string($userAgent) && $userAgent !== '' ? $userAgent : null;
     }
 
+    /**
+     * Whether the active configuration originated from trusted application code
+     * (an explicit array or resolver) rather than an untrusted config file.
+     */
+    private static function isTrustedSource(): bool
+    {
+        return self::$config !== null || self::$resolver !== null;
+    }
+
     /** @return array<string, mixed> */
     private static function resolved(): array
     {
         if (self::$config !== null) {
             return self::$config;
+        }
+
+        if (self::$resolver !== null) {
+            $resolved = (self::$resolver)();
+
+            return $resolved;
         }
 
         $path = self::resolveConfigFilePath();
@@ -94,21 +119,21 @@ final class OpenMeteoConfig
 
         $configuredPath = getenv('OPENMETEO_CONFIG_PATH');
         if (! is_string($configuredPath) || $configuredPath === '') { // @pest-mutate-ignore: EmptyStringToNotEmpty
-            return exists($defaultPath) ? $defaultPath : null;
+            return is_file($defaultPath) ? $defaultPath : null;
         }
 
-        $resolved = canonicalize($configuredPath);
-        if ($resolved === null) {
+        $resolved = realpath($configuredPath);
+        if ($resolved === false) {
             return null;
         }
 
-        if (! ends_with($resolved, '.php')) {
-            return exists($defaultPath) ? $defaultPath : null;
+        if (! str_ends_with($resolved, '.php')) {
+            return is_file($defaultPath) ? $defaultPath : null;
         }
 
-        $packageRootReal = canonicalize($packageRoot);
-        if ($packageRootReal === null || ! starts_with($resolved, $packageRootReal.DIRECTORY_SEPARATOR)) { // @pest-mutate-ignore: ConcatRemoveRight
-            return exists($defaultPath) ? $defaultPath : null; // @pest-mutate-ignore: TernaryNegated
+        $packageRootReal = realpath($packageRoot);
+        if ($packageRootReal === false || ! str_starts_with($resolved, $packageRootReal.DIRECTORY_SEPARATOR)) { // @pest-mutate-ignore: ConcatRemoveRight
+            return is_file($defaultPath) ? $defaultPath : null; // @pest-mutate-ignore: TernaryNegated
         }
 
         return $resolved;
@@ -141,7 +166,7 @@ final class OpenMeteoConfig
             return $url;
         }
 
-        if (starts_with(lowercase($parts['host']), 'customer-')) {
+        if (str_starts_with(strtolower($parts['host']), 'customer-')) {
             return $url;
         }
 
@@ -155,23 +180,48 @@ final class OpenMeteoConfig
         return $scheme.$host.$port.$path.$query.$fragment;
     }
 
-    private static function isAllowedHostUrl(string $url): bool
+    /**
+     * Trusted sources may target any host, but non-loopback hosts must use https.
+     */
+    private static function isAllowedTrustedHostUrl(string $url): bool
     {
         $parts = parse_url($url);
         if ($parts === false || ! isset($parts['scheme'], $parts['host'])) { // @pest-mutate-ignore: FalseToTrue
             return false;
         }
 
-        if (lowercase($parts['scheme']) !== 'https') {
-            return false;
-        }
-
-        $host = lowercase($parts['host']);
-
-        if (contains(['localhost', '127.0.0.1'], $host)) {
+        if (self::isLoopbackHost(strtolower($parts['host']))) {
             return true;
         }
 
-        return $host === 'open-meteo.com' || ends_with($host, '.open-meteo.com');
+        return strtolower($parts['scheme']) === 'https';
+    }
+
+    /**
+     * Untrusted config files may only target Open-Meteo hosts (or loopback) over https.
+     */
+    private static function isAllowedFileHostUrl(string $url): bool
+    {
+        $parts = parse_url($url);
+        if ($parts === false || ! isset($parts['scheme'], $parts['host'])) { // @pest-mutate-ignore: FalseToTrue
+            return false;
+        }
+
+        if (strtolower($parts['scheme']) !== 'https') {
+            return false;
+        }
+
+        $host = strtolower($parts['host']);
+
+        if (self::isLoopbackHost($host)) {
+            return true;
+        }
+
+        return $host === 'open-meteo.com' || str_ends_with($host, '.open-meteo.com');
+    }
+
+    private static function isLoopbackHost(string $host): bool
+    {
+        return in_array($host, ['localhost', '127.0.0.1'], true);
     }
 }

@@ -33,17 +33,6 @@ use TempiMarathon\OpenMeteo\Data\SeasonalUnits;
 use TempiMarathon\OpenMeteo\Exceptions\InvalidForecastSegmentException;
 use TempiMarathon\OpenMeteo\Exceptions\UnsupportedResponseClassException;
 
-use function Psl\Type\dict;
-use function Psl\Type\float;
-use function Psl\Type\int;
-use function Psl\Type\nullable;
-use function Psl\Type\shape;
-use function Psl\Type\string;
-use function Psl\Type\union;
-use function Psl\Type\vec;
-use function Psl\Vec\map;
-use function Psl\Vec\values;
-
 trait CreatesTimeSeriesResponse
 {
     use BuildsSeries;
@@ -323,16 +312,16 @@ trait CreatesTimeSeriesResponse
     protected function collectTimeSeriesResponsesFromPayload(array $data, string $responseClass): array
     {
         if ($this->isSegmentedCoordinatePayload($data)) {
-            return map(
-                values($data),
-                function (mixed $segment) use ($responseClass): CoordinateResponse {
-                    if (! is_array($segment)) {
-                        throw new InvalidForecastSegmentException;
-                    }
+            $responses = [];
+            foreach ($data as $segment) {
+                if (! is_array($segment)) {
+                    throw new InvalidForecastSegmentException;
+                }
 
-                    return $this->createTimeSeriesResponseFromPayload($segment, $responseClass);
-                },
-            );
+                $responses[] = $this->createTimeSeriesResponseFromPayload($segment, $responseClass);
+            }
+
+            return $responses;
         }
 
         return [$this->createTimeSeriesResponseFromPayload($data, $responseClass)];
@@ -352,14 +341,10 @@ trait CreatesTimeSeriesResponse
      */
     private function coordinateRootFromPayload(array $data): array
     {
-        $root = shape([
-            'latitude' => float(),
-            'longitude' => float(),
-            'timezone' => string(),
-        ])->coerce($data);
-
         return [
-            ...$root,
+            'latitude' => Coerce::toFloat($data['latitude'] ?? null),
+            'longitude' => Coerce::toFloat($data['longitude'] ?? null),
+            'timezone' => Coerce::toString($data['timezone'] ?? null),
             'metadata' => CoordinateMetadata::fromPayload($data),
         ];
     }
@@ -374,10 +359,13 @@ trait CreatesTimeSeriesResponse
             return [];
         }
 
-        return dict(
-            string(),
-            vec(nullable(union(int(), float(), string()))),
-        )->coerce($data[$key]);
+        $series = [];
+        /** @var mixed $column */
+        foreach ($data[$key] as $name => $column) {
+            $series[Coerce::toString($name)] = Coerce::toSeriesColumn($column);
+        }
+
+        return $series;
     }
 
     /**
@@ -390,10 +378,13 @@ trait CreatesTimeSeriesResponse
             return [];
         }
 
-        return dict(
-            string(),
-            nullable(union(int(), float(), string())),
-        )->coerce($data['current']);
+        $current = [];
+        /** @var mixed $value */
+        foreach ($data['current'] as $name => $value) {
+            $current[Coerce::toString($name)] = Coerce::toSeriesValue($value);
+        }
+
+        return $current;
     }
 
     /**
@@ -406,6 +397,12 @@ trait CreatesTimeSeriesResponse
             return [];
         }
 
-        return dict(string(), string())->coerce($data[$key]);
+        $units = [];
+        /** @var mixed $value */
+        foreach ($data[$key] as $name => $value) {
+            $units[Coerce::toString($name)] = Coerce::toString($value);
+        }
+
+        return $units;
     }
 }

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Psl\Type\Exception\CoercionException;
 use Saloon\Http\Faking\MockClient;
 use TempiMarathon\OpenMeteo\Connectors\BaseConnector;
 use TempiMarathon\OpenMeteo\Connectors\ForecastConnector;
@@ -18,6 +17,7 @@ use TempiMarathon\OpenMeteo\Enums\Timezone;
 use TempiMarathon\OpenMeteo\Enums\WeatherCode;
 use TempiMarathon\OpenMeteo\Exceptions\InvalidCoordinateException;
 use TempiMarathon\OpenMeteo\Exceptions\InvalidForecastParameterException;
+use TempiMarathon\OpenMeteo\Exceptions\MalformedPayloadException;
 use TempiMarathon\OpenMeteo\Exceptions\MissingSeriesTimeException;
 use TempiMarathon\OpenMeteo\Exceptions\MultiCoordinateResponseException;
 use TempiMarathon\OpenMeteo\Requests\Forecast\GetForecastRequest;
@@ -188,7 +188,7 @@ it('throws when forecast payload is malformed', function (): void {
     $connector = new ForecastConnector;
 
     expect(fn () => $connector->weather()->get(52.37, 4.89)->dto())
-        ->toThrow(CoercionException::class);
+        ->toThrow(MalformedPayloadException::class);
 });
 
 it('normalizes modern hourly response keys', function (): void {

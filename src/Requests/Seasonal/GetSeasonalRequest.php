@@ -15,8 +15,6 @@ use TempiMarathon\OpenMeteo\Requests\AbstractCoordinateGetRequest;
 use TempiMarathon\OpenMeteo\Support\ForecastWindowLimits;
 use TempiMarathon\OpenMeteo\Support\JoinsQueryEnumValues;
 
-use function Psl\Vec\values;
-
 final class GetSeasonalRequest extends AbstractCoordinateGetRequest
 {
     use JoinsQueryEnumValues;
@@ -35,30 +33,34 @@ final class GetSeasonalRequest extends AbstractCoordinateGetRequest
 
     public function hourly(SeasonalHourlyVariable ...$variables): static
     {
-        return clone ($this, [
-            'hourly' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->hourly = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function daily(SeasonalDailyVariable ...$variables): static
     {
-        return clone ($this, [
-            'daily' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->daily = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function weekly(SeasonalWeeklyVariable ...$variables): static
     {
-        return clone ($this, [
-            'weekly' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->weekly = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function monthly(MonthlyVariable ...$variables): static
     {
-        return clone ($this, [
-            'monthly' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->monthly = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     protected function supportedForecastDaysRange(): array

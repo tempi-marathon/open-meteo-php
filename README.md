@@ -1,7 +1,7 @@
 # 🌤 Open-Meteo PHP
 
 [![Tests](https://github.com/tempi-marathon/open-meteo-php/actions/workflows/test.yml/badge.svg)](https://github.com/tempi-marathon/open-meteo-php/actions/workflows/test.yml)
-[![PHP](https://img.shields.io/static/v1?label=PHP&message=%5E8.5&color=777BB4&logo=php&logoColor=white)](https://www.php.net/)
+[![PHP](https://img.shields.io/static/v1?label=PHP&message=%5E8.3&color=777BB4&logo=php&logoColor=white)](https://www.php.net/)
 [![License: MIT](https://img.shields.io/static/v1?label=License&message=MIT&color=blue)](LICENSE)
 
 Framework-agnostic [Saloon](https://docs.saloon.dev/) SDK for the [Open-Meteo](https://open-meteo.com/) APIs.
@@ -10,7 +10,7 @@ Framework-agnostic [Saloon](https://docs.saloon.dev/) SDK for the [Open-Meteo](h
 
 **No API key required.** The free, non-commercial Open-Meteo API works out of the box — install the package and start making requests.
 
-Requires PHP `^8.5`.
+Requires PHP 8.3, 8.4, or 8.5.
 
 ## Installation
 
@@ -172,6 +172,11 @@ Not every commercial plan includes every API — see the [pricing table](https:/
 
 Explicit `hosts` in config always take precedence over auto-switching. Use this for self-hosted instances, debugging, or when you need a specific endpoint.
 
+Host overrides are validated to prevent traffic from being silently redirected to an untrusted origin. The policy depends on where the value comes from:
+
+- **Trusted sources** — an explicit `OpenMeteoConfig::configure([...])` call, a registered resolver, or (in Laravel) `config/openmeteo.php` resolved through the container — may target **any HTTPS host**. Loopback hosts (`localhost`, `127.0.0.1`) may also use plain HTTP for local development.
+- **Untrusted sources** — a bare config file loaded from disk outside a framework — may only target `open-meteo.com` (and its subdomains) over HTTPS, or a loopback host. Anything else falls back to the built-in default host.
+
 | Config key | Free (default) | Commercial (auto or manual) |
 |---|---|---|
 | `forecast` | `https://api.open-meteo.com/v1/` | `https://customer-api.open-meteo.com/v1/` |
@@ -189,13 +194,31 @@ Self-hosted deployments should set custom `hosts` and leave `apikey` unset.
 
 ## Laravel
 
-The package auto-registers via Laravel package discovery. On first boot, `config/openmeteo.php` is copied to your application if it does not already exist.
+The package auto-registers via Laravel package discovery — no manual provider registration is required, and it works out of the box with zero configuration.
+
+Configuration is read live from the container on every request, so the SDK stays correct under long-running runtimes such as [Octane](https://laravel.com/docs/octane) and queue workers.
+
+Publish the config file only if you want to customise it:
+
+```bash
+php artisan vendor:publish --tag=openmeteo-config
+```
+
+This copies `config/openmeteo.php` into your application's `config/` directory. Until you publish, the package's bundled defaults are used (merged via `mergeConfigFrom`).
 
 All environment variables are optional:
 
 ```dotenv
 # OPENMETEO_API_KEY=your-subscription-key
 # OPENMETEO_USER_AGENT=my-app/1.0
+```
+
+Resolve the entry point from the container (registered as a singleton):
+
+```php
+use TempiMarathon\OpenMeteo\OpenMeteo;
+
+$forecast = app(OpenMeteo::class)->forecast()->weather()->get(52.52, 13.41)->dto();
 ```
 
 ## Attribution
@@ -212,7 +235,7 @@ See [SECURITY.md](SECURITY.md) for API key handling and `debugUrl()` guidance.
 
 Run `composer test` for Pint, PHPStan (max), and Pest (100% coverage).
 
-Run `composer test:infection` for mutation testing (Pest mutate).
+Run `composer test:mutation` for mutation testing (Pest mutate).
 
 ## Contributing
 

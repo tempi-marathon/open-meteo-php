@@ -16,9 +16,10 @@ trait SendsThroughConnector
 
     public function using(Connector $connector): static
     {
-        return clone ($this, [
-            'connector' => $connector,
-        ]);
+        $clone = clone $this;
+        $clone->connector = $connector;
+
+        return $clone;
     }
 
     public function send(): Response

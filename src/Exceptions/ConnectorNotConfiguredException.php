@@ -6,7 +6,7 @@ namespace TempiMarathon\OpenMeteo\Exceptions;
 
 use LogicException;
 
-final class ConnectorNotConfiguredException extends LogicException
+final class ConnectorNotConfiguredException extends LogicException implements OpenMeteoException
 {
     public function __construct()
     {

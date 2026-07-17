@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TempiMarathon\OpenMeteo\Laravel;
 
 use Illuminate\Support\ServiceProvider;
+use TempiMarathon\OpenMeteo\OpenMeteo;
 use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 
 final class OpenMeteoServiceProvider extends ServiceProvider
@@ -13,17 +14,24 @@ final class OpenMeteoServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(dirname(__DIR__).'/config/openmeteo.php', 'openmeteo');
 
-        /** @var array<string, mixed> $config */
-        $config = config('openmeteo', []);
-        OpenMeteoConfig::configure($config);
+        // Resolve configuration lazily on every access so long-running runtimes
+        // (Octane, queue workers) always see the current container config.
+        OpenMeteoConfig::resolveUsing(static function (): array {
+            /** @var array<string, mixed> $config */
+            $config = config('openmeteo', []);
+
+            return $config;
+        });
+
+        $this->app->singleton(OpenMeteo::class, static fn (): OpenMeteo => new OpenMeteo);
     }
 
     public function boot(): void
     {
-        $target = $this->app->configPath('openmeteo.php');
-
-        if (! is_file($target)) {
-            copy(dirname(__DIR__).'/config/openmeteo.php', $target);
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                dirname(__DIR__).'/config/openmeteo.php' => $this->app->configPath('openmeteo.php'),
+            ], 'openmeteo-config');
         }
     }
 }

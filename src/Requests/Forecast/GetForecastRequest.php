@@ -16,8 +16,6 @@ use TempiMarathon\OpenMeteo\Support\BuildsSolarIrradianceOptions;
 use TempiMarathon\OpenMeteo\Support\ForecastWindowLimits;
 use TempiMarathon\OpenMeteo\Support\JoinsQueryEnumValues;
 
-use function Psl\Vec\values;
-
 /** @pest-mutate-ignore */
 final class GetForecastRequest extends AbstractCoordinateGetRequest
 {
@@ -38,30 +36,34 @@ final class GetForecastRequest extends AbstractCoordinateGetRequest
 
     public function hourly(HourlyVariable ...$variables): static
     {
-        return clone ($this, [
-            'hourly' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->hourly = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function daily(DailyVariable ...$variables): static
     {
-        return clone ($this, [
-            'daily' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->daily = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function current(ForecastCurrentVariable ...$variables): static
     {
-        return clone ($this, [
-            'current' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->current = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function minutely15(ForecastMinutely15Variable ...$variables): static
     {
-        return clone ($this, [
-            'minutely15' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->minutely15 = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     protected function supportedForecastDaysRange(): array

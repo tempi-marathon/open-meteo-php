@@ -8,9 +8,6 @@ use DateTimeImmutable;
 use TempiMarathon\OpenMeteo\Enums\WeatherCode;
 use TempiMarathon\OpenMeteo\WindDirection;
 
-use function Psl\Type\float;
-use function Psl\Type\int;
-
 final class CoercesVariableValues
 {
     public static function coerce(string $key, mixed $value): float|bool|string|WindDirection|WeatherCode|DateTimeImmutable|null
@@ -44,7 +41,7 @@ final class CoercesVariableValues
                 return null;
             }
 
-            return (bool) int()->coerce($value);
+            return (bool) Coerce::toInt($value);
         }
 
         if (in_array($key, ['sunrise', 'sunset'], true) && is_string($value)) {
@@ -52,7 +49,7 @@ final class CoercesVariableValues
         }
 
         if (is_int($value) || is_float($value)) {
-            return float()->coerce($value);
+            return Coerce::toFloat($value);
         }
 
         if (is_bool($value)) {

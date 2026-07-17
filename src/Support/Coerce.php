@@ -17,7 +17,7 @@ final class Coerce
     public static function toFloat(mixed $value): float
     {
         if (is_int($value) || is_float($value)) {
-            return (float) $value;
+            return (float) $value; // @pest-mutate-ignore: RemoveDoubleCast - float return type already coerces int input
         }
 
         if (is_string($value) && is_numeric($value)) {
@@ -35,17 +35,29 @@ final class Coerce
             return $value;
         }
 
-        if (is_float($value) && (float) (int) $value === $value) {
+        if (is_float($value) && self::isWholeNumber($value)) {
             return (int) $value;
         }
 
-        if (is_string($value) && is_numeric($value) && (float) (int) $value === (float) $value) {
+        if (is_string($value) && is_numeric($value) && self::isWholeNumber((float) $value)) {
             return (int) $value;
         }
 
         throw new MalformedPayloadException(
             sprintf('Expected an int value, got %s.', get_debug_type($value)),
         );
+    }
+
+    /**
+     * Whether a float is a whole number that fits losslessly in PHP's int range.
+     *
+     * Casting to int truncates the fractional part and clamps out-of-range
+     * values, so a value only survives the round-trip unchanged when it is both
+     * integral (e.g. 1234.0, not 1234.5) and within int bounds.
+     */
+    private static function isWholeNumber(float $value): bool
+    {
+        return (float) (int) $value === $value;
     }
 
     public static function toString(mixed $value): string
@@ -90,10 +102,13 @@ final class Coerce
             );
         }
 
-        return array_values(array_map(
-            static fn (mixed $cell): int|float|string|null => self::toSeriesValue($cell),
-            $value,
-        ));
+        $column = [];
+        /** @var mixed $cell */
+        foreach ($value as $cell) {
+            $column[] = self::toSeriesValue($cell);
+        }
+
+        return $column;
     }
 
     /**
@@ -107,10 +122,13 @@ final class Coerce
             );
         }
 
-        return array_values(array_map(
-            static fn (mixed $item): float => self::toFloat($item),
-            $value,
-        ));
+        $floats = [];
+        /** @var mixed $item */
+        foreach ($value as $item) {
+            $floats[] = self::toFloat($item);
+        }
+
+        return $floats;
     }
 
     /**
@@ -124,9 +142,12 @@ final class Coerce
             );
         }
 
-        return array_values(array_map(
-            static fn (mixed $item): string => self::toString($item),
-            $value,
-        ));
+        $strings = [];
+        /** @var mixed $item */
+        foreach ($value as $item) {
+            $strings[] = self::toString($item);
+        }
+
+        return $strings;
     }
 }

@@ -11,12 +11,13 @@ trait BuildsExtraQuery
 
     public function withQueryParam(string $key, string|int|float|bool $value): static
     {
-        return clone ($this, [
-            'extraQuery' => [
-                ...$this->extraQuery,
-                $key => (string) $value,
-            ],
-        ]);
+        $clone = clone $this;
+        $clone->extraQuery = [
+            ...$this->extraQuery,
+            $key => (string) $value,
+        ];
+
+        return $clone;
     }
 
     /**

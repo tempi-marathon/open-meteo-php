@@ -12,16 +12,18 @@ trait BuildsSolarIrradianceOptions
 
     public function tilt(float $tilt): static
     {
-        return clone ($this, [
-            'tilt' => $tilt,
-        ]);
+        $clone = clone $this;
+        $clone->tilt = $tilt;
+
+        return $clone;
     }
 
     public function azimuth(float $azimuth): static
     {
-        return clone ($this, [
-            'azimuth' => $azimuth,
-        ]);
+        $clone = clone $this;
+        $clone->azimuth = $azimuth;
+
+        return $clone;
     }
 
     /**

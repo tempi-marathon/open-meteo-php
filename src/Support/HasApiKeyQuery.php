@@ -10,9 +10,10 @@ trait HasApiKeyQuery
 
     public function apiKey(#[\SensitiveParameter] string $apiKey): static
     {
-        return clone ($this, [
-            'apiKey' => $apiKey,
-        ]);
+        $clone = clone $this;
+        $clone->apiKey = $apiKey;
+
+        return $clone;
     }
 
     /**

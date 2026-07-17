@@ -6,7 +6,7 @@ namespace TempiMarathon\OpenMeteo\Exceptions;
 
 use LogicException;
 
-final class UnexpectedDtoException extends LogicException
+final class UnexpectedDtoException extends LogicException implements OpenMeteoException
 {
     /**
      * @param  class-string  $expectedClass

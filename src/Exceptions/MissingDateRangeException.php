@@ -6,4 +6,4 @@ namespace TempiMarathon\OpenMeteo\Exceptions;
 
 use InvalidArgumentException;
 
-final class MissingDateRangeException extends InvalidArgumentException {}
+final class MissingDateRangeException extends InvalidArgumentException implements OpenMeteoException {}

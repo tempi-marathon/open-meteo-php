@@ -10,10 +10,13 @@ use TempiMarathon\OpenMeteo\Exceptions\InvalidForecastParameterException;
 use TempiMarathon\OpenMeteo\Exceptions\InvalidForecastSegmentException;
 use TempiMarathon\OpenMeteo\Exceptions\InvalidGeocodingCountException;
 use TempiMarathon\OpenMeteo\Exceptions\InvalidGeocodingSearchException;
+use TempiMarathon\OpenMeteo\Exceptions\MalformedPayloadException;
 use TempiMarathon\OpenMeteo\Exceptions\MissingCurrentTimeException;
 use TempiMarathon\OpenMeteo\Exceptions\MissingDateRangeException;
 use TempiMarathon\OpenMeteo\Exceptions\MissingSeriesTimeException;
 use TempiMarathon\OpenMeteo\Exceptions\MultiCoordinateResponseException;
+use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoException;
+use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoRequestException;
 use TempiMarathon\OpenMeteo\Exceptions\ResolvesRequestUrlMisuseException;
 use TempiMarathon\OpenMeteo\Exceptions\UnexpectedDtoException;
 use TempiMarathon\OpenMeteo\Exceptions\UnsupportedResponseClassException;
@@ -26,14 +29,50 @@ covers(
     InvalidForecastSegmentException::class,
     InvalidGeocodingCountException::class,
     InvalidGeocodingSearchException::class,
+    MalformedPayloadException::class,
     MissingDateRangeException::class,
     MultiCoordinateResponseException::class,
     MissingCurrentTimeException::class,
     MissingSeriesTimeException::class,
+    OpenMeteoRequestException::class,
     ResolvesRequestUrlMisuseException::class,
     UnsupportedResponseClassException::class,
     UnexpectedDtoException::class,
 );
+
+it('marks every sdk exception with the shared OpenMeteoException contract', function (string $exceptionClass): void {
+    expect(is_subclass_of($exceptionClass, OpenMeteoException::class))->toBeTrue()
+        ->and(is_subclass_of($exceptionClass, Throwable::class))->toBeTrue();
+})->with([
+    ConnectorNotConfiguredException::class,
+    DebugUrlNotSupportedException::class,
+    InvalidCoordinateException::class,
+    InvalidForecastParameterException::class,
+    InvalidForecastSegmentException::class,
+    InvalidGeocodingCountException::class,
+    InvalidGeocodingSearchException::class,
+    MalformedPayloadException::class,
+    MissingCurrentTimeException::class,
+    MissingDateRangeException::class,
+    MissingSeriesTimeException::class,
+    MultiCoordinateResponseException::class,
+    OpenMeteoRequestException::class,
+    ResolvesRequestUrlMisuseException::class,
+    UnexpectedDtoException::class,
+    UnsupportedResponseClassException::class,
+]);
+
+it('can be caught through the shared OpenMeteoException contract', function (): void {
+    $caught = null;
+
+    try {
+        throw new InvalidCoordinateException('boom');
+    } catch (OpenMeteoException $exception) {
+        $caught = $exception;
+    }
+
+    expect($caught)->toBeInstanceOf(InvalidCoordinateException::class);
+});
 
 it('exposes stable messages for parameterless sdk exceptions', function (string $exceptionClass, string $message): void {
     $exception = new $exceptionClass;

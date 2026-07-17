@@ -17,17 +17,19 @@ trait BuildsDateAndTimezoneOptions
 
     public function between(DateTimeInterface $start, DateTimeInterface $end): static
     {
-        return clone ($this, [
-            'startDate' => $start,
-            'endDate' => $end,
-        ]);
+        $clone = clone $this;
+        $clone->startDate = $start;
+        $clone->endDate = $end;
+
+        return $clone;
     }
 
     public function timezone(Timezone $timezone): static
     {
-        return clone ($this, [
-            'timezone' => $timezone,
-        ]);
+        $clone = clone $this;
+        $clone->timezone = $timezone;
+
+        return $clone;
     }
 
     /**

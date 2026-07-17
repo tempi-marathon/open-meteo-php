@@ -16,8 +16,6 @@ use TempiMarathon\OpenMeteo\Requests\AbstractCoordinateGetRequest;
 use TempiMarathon\OpenMeteo\Support\ForecastWindowLimits;
 use TempiMarathon\OpenMeteo\Support\JoinsQueryEnumValues;
 
-use function Psl\Vec\values;
-
 final class GetMarineRequest extends AbstractCoordinateGetRequest
 {
     use JoinsQueryEnumValues;
@@ -38,37 +36,42 @@ final class GetMarineRequest extends AbstractCoordinateGetRequest
 
     public function hourly(MarineHourlyVariable ...$variables): static
     {
-        return clone ($this, [
-            'hourly' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->hourly = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function daily(MarineDailyVariable ...$variables): static
     {
-        return clone ($this, [
-            'daily' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->daily = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function current(MarineCurrentVariable ...$variables): static
     {
-        return clone ($this, [
-            'current' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->current = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function minutely15(MarineMinutely15Variable ...$variables): static
     {
-        return clone ($this, [
-            'minutely15' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->minutely15 = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function lengthUnit(LengthUnit $unit): static
     {
-        return clone ($this, [
-            'lengthUnit' => $unit,
-        ]);
+        $clone = clone $this;
+        $clone->lengthUnit = $unit;
+
+        return $clone;
     }
 
     /**

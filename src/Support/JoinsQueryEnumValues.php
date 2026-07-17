@@ -6,9 +6,6 @@ namespace TempiMarathon\OpenMeteo\Support;
 
 use BackedEnum;
 
-use function Psl\Str\join;
-use function Psl\Vec\map;
-
 trait JoinsQueryEnumValues
 {
     /**
@@ -16,6 +13,9 @@ trait JoinsQueryEnumValues
      */
     protected function joinEnumValues(array $variables): string
     {
-        return join(map($variables, static fn (BackedEnum $variable): string => (string) $variable->value), ',');
+        return implode(',', array_map(
+            static fn (BackedEnum $variable): string => (string) $variable->value,
+            $variables,
+        ));
     }
 }

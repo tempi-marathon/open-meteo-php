@@ -11,8 +11,6 @@ use TempiMarathon\OpenMeteo\Enums\TemperatureUnit;
 use TempiMarathon\OpenMeteo\Enums\TimeFormat;
 use TempiMarathon\OpenMeteo\Enums\WindSpeedUnit;
 
-use function Psl\Str\join;
-
 trait BuildsWeatherQueryOptions
 {
     private ?TemperatureUnit $temperatureUnit = null;
@@ -32,54 +30,61 @@ trait BuildsWeatherQueryOptions
 
     public function temperatureUnit(TemperatureUnit $unit): static
     {
-        return clone ($this, [
-            'temperatureUnit' => $unit,
-        ]);
+        $clone = clone $this;
+        $clone->temperatureUnit = $unit;
+
+        return $clone;
     }
 
     public function windSpeedUnit(WindSpeedUnit $unit): static
     {
-        return clone ($this, [
-            'windSpeedUnit' => $unit,
-        ]);
+        $clone = clone $this;
+        $clone->windSpeedUnit = $unit;
+
+        return $clone;
     }
 
     public function precipitationUnit(PrecipitationUnit $unit): static
     {
-        return clone ($this, [
-            'precipitationUnit' => $unit,
-        ]);
+        $clone = clone $this;
+        $clone->precipitationUnit = $unit;
+
+        return $clone;
     }
 
     public function timeFormat(TimeFormat $format): static
     {
-        return clone ($this, [
-            'timeFormat' => $format,
-        ]);
+        $clone = clone $this;
+        $clone->timeFormat = $format;
+
+        return $clone;
     }
 
     public function cellSelection(CellSelection $selection): static
     {
-        return clone ($this, [
-            'cellSelection' => $selection,
-        ]);
+        $clone = clone $this;
+        $clone->cellSelection = $selection;
+
+        return $clone;
     }
 
     public function elevation(float $elevation): static
     {
-        return clone ($this, [
-            'elevation' => $elevation,
-        ]);
+        $clone = clone $this;
+        $clone->elevation = $elevation;
+
+        return $clone;
     }
 
     public function models(BackedEnum|string ...$models): static
     {
-        return clone ($this, [
-            'models' => array_map(
-                static fn (BackedEnum|string $model): string => $model instanceof BackedEnum ? (string) $model->value : $model,
-                array_values($models),
-            ),
-        ]);
+        $clone = clone $this;
+        $clone->models = array_map(
+            static fn (BackedEnum|string $model): string => $model instanceof BackedEnum ? (string) $model->value : $model,
+            array_values($models),
+        );
+
+        return $clone;
     }
 
     /**
@@ -131,7 +136,7 @@ trait BuildsWeatherQueryOptions
         }
 
         if (isset($allowed['models']) && $this->models !== []) {
-            $query['models'] = join($this->models, ',');
+            $query['models'] = implode(',', $this->models);
         }
 
         return $query;

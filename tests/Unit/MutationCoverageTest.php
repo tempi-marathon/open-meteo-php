@@ -130,7 +130,7 @@ it('transforms valid urls through customer host conversion', function (): void {
 });
 
 it('allows https urls with a host and no path', function (): void {
-    $isAllowedHostUrl = (new ReflectionMethod(OpenMeteoConfig::class, 'isAllowedHostUrl'))->getClosure();
+    $isAllowedHostUrl = (new ReflectionMethod(OpenMeteoConfig::class, 'isAllowedFileHostUrl'))->getClosure();
 
     expect($isAllowedHostUrl('https://api.open-meteo.com'))->toBeTrue();
 });

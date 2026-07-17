@@ -14,8 +14,6 @@ use TempiMarathon\OpenMeteo\Support\BuildsSolarIrradianceOptions;
 use TempiMarathon\OpenMeteo\Support\ForecastWindowLimits;
 use TempiMarathon\OpenMeteo\Support\JoinsQueryEnumValues;
 
-use function Psl\Vec\values;
-
 final class GetArchiveRequest extends AbstractCoordinateGetRequest
 {
     use BuildsSolarIrradianceOptions;
@@ -29,16 +27,18 @@ final class GetArchiveRequest extends AbstractCoordinateGetRequest
 
     public function hourly(HistoricalHourlyVariable ...$variables): static
     {
-        return clone ($this, [
-            'hourly' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->hourly = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     public function daily(HistoricalDailyVariable ...$variables): static
     {
-        return clone ($this, [
-            'daily' => values($variables),
-        ]);
+        $clone = clone $this;
+        $clone->daily = array_values($variables); // @pest-mutate-ignore: UnwrapArrayValues
+
+        return $clone;
     }
 
     protected function requiresDateRange(): bool
