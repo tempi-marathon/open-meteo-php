@@ -10,9 +10,9 @@ final class ConvertsApiKeys
 {
     /** @var array<string, string> */
     private const ALIASES = [
-        'weathercode' => 'weather_code',
-        'windspeed_10m' => 'wind_speed_10m',
-        'winddirection_10m' => 'wind_direction_10m',
+        'weathercode' => 'weather_code', // @pest-mutate-ignore
+        'windspeed_10m' => 'wind_speed_10m', // @pest-mutate-ignore
+        'winddirection_10m' => 'wind_direction_10m', // @pest-mutate-ignore
     ];
 
     public static function propertyToApiKey(string $property): string

@@ -99,6 +99,23 @@ it('exposes default hosts for every api surface', function (string $surface, str
     'elevation' => ['elevation', 'https://api.open-meteo.com/v1/'],
 ]);
 
+it('keeps the complete default host map', function (): void {
+    $hosts = (new ReflectionClass(OpenMeteoConfig::class))->getConstant('DEFAULT_HOSTS');
+
+    expect($hosts)->toBe([
+        'forecast' => 'https://api.open-meteo.com/v1/',
+        'historical' => 'https://archive-api.open-meteo.com/v1/',
+        'geocoding' => 'https://geocoding-api.open-meteo.com/v1/',
+        'air_quality' => 'https://air-quality-api.open-meteo.com/v1/',
+        'marine' => 'https://marine-api.open-meteo.com/v1/',
+        'climate' => 'https://climate-api.open-meteo.com/v1/',
+        'flood' => 'https://flood-api.open-meteo.com/v1/',
+        'ensemble' => 'https://ensemble-api.open-meteo.com/v1/',
+        'seasonal' => 'https://seasonal-api.open-meteo.com/v1/',
+        'elevation' => 'https://api.open-meteo.com/v1/',
+    ]);
+});
+
 it('rejects config files outside the package root even with a matching prefix', function (): void {
     OpenMeteoConfig::reset();
 

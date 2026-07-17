@@ -23,6 +23,12 @@ it('redacts api keys from uris', function (): void {
         ->not->toContain('secret-key');
 });
 
+it('redacts only the configured sensitive query keys', function (): void {
+    $keys = (new ReflectionClass(RedactsUriSecrets::class))->getConstant('SENSITIVE_QUERY_KEYS');
+
+    expect($keys)->toBe(['apikey']);
+});
+
 it('redacts api keys from debug urls', function (): void {
     OpenMeteoConfig::configure(['apikey' => 'secret-key']);
 

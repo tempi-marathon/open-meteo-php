@@ -7,8 +7,8 @@ namespace TempiMarathon\OpenMeteo\Support;
 final class RedactsUriSecrets
 {
     /** @var list<string> */
-    private const array SENSITIVE_QUERY_KEYS = [ // @pest-mutate-ignore
-        'apikey',
+    private const array SENSITIVE_QUERY_KEYS = [
+        'apikey', // @pest-mutate-ignore
     ];
 
     public static function redact(string $uri): string

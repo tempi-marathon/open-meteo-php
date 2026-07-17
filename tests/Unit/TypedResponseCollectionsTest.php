@@ -14,10 +14,12 @@ use TempiMarathon\OpenMeteo\Data\AirQualityResponse;
 use TempiMarathon\OpenMeteo\Data\AirQualityResponseCollection;
 use TempiMarathon\OpenMeteo\Data\ClimateResponse;
 use TempiMarathon\OpenMeteo\Data\ClimateResponseCollection;
+use TempiMarathon\OpenMeteo\Data\CoordinateResponseCollection;
 use TempiMarathon\OpenMeteo\Data\EnsembleResponse;
 use TempiMarathon\OpenMeteo\Data\EnsembleResponseCollection;
 use TempiMarathon\OpenMeteo\Data\FloodResponse;
 use TempiMarathon\OpenMeteo\Data\FloodResponseCollection;
+use TempiMarathon\OpenMeteo\Data\ForecastResponseCollection;
 use TempiMarathon\OpenMeteo\Data\HistoricalResponse;
 use TempiMarathon\OpenMeteo\Data\HistoricalResponseCollection;
 use TempiMarathon\OpenMeteo\Data\MarineResponse;
@@ -40,6 +42,7 @@ covers(
     ClimateResponseCollection::class,
     EnsembleResponseCollection::class,
     FloodResponseCollection::class,
+    ForecastResponseCollection::class,
     HistoricalResponseCollection::class,
     MarineResponseCollection::class,
     SeasonalResponseCollection::class,
@@ -191,3 +194,26 @@ it('uses abstract coordinate dtoCollection for stub requests', function (): void
     expect($collection->count())->toBe(1)
         ->and($collection->first())->toBeInstanceOf(MarineResponse::class);
 });
+
+it('returns null from first when the collection holds a mismatched response type', function (
+    string $collectionClass,
+    string $wrongResponseClass,
+    callable $payloadFactory,
+): void {
+    $collection = (new ReflectionClass($collectionClass))->newInstanceWithoutConstructor();
+    $property = new ReflectionProperty(CoordinateResponseCollection::class, 'responses');
+    $property->setValue($collection, [
+        timeSeriesResponseFromPayload($payloadFactory(), $wrongResponseClass),
+    ]);
+
+    expect($collection->first())->toBeNull();
+})->with([
+    'air quality' => [AirQualityResponseCollection::class, MarineResponse::class, fn () => marinePayload()],
+    'climate' => [ClimateResponseCollection::class, MarineResponse::class, fn () => marinePayload()],
+    'ensemble' => [EnsembleResponseCollection::class, MarineResponse::class, fn () => marinePayload()],
+    'flood' => [FloodResponseCollection::class, MarineResponse::class, fn () => marinePayload()],
+    'forecast' => [ForecastResponseCollection::class, MarineResponse::class, fn () => marinePayload()],
+    'historical' => [HistoricalResponseCollection::class, MarineResponse::class, fn () => marinePayload()],
+    'marine' => [MarineResponseCollection::class, FloodResponse::class, fn () => floodPayload()],
+    'seasonal' => [SeasonalResponseCollection::class, MarineResponse::class, fn () => marinePayload()],
+]);

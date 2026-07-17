@@ -21,16 +21,16 @@ covers(
 
 it('validates latitude range', function (): void {
     expect(fn () => ValidatesCoordinates::assert(91.0, 0.0))
-        ->toThrow(InvalidCoordinateException::class, 'latitude must be between -90 and 90')
+        ->toThrow(InvalidCoordinateException::class, 'latitude must be between -90 and 90, 91 given.')
         ->and(fn () => ValidatesCoordinates::assert(-91.0, 0.0))
-        ->toThrow(InvalidCoordinateException::class, 'latitude must be between -90 and 90');
+        ->toThrow(InvalidCoordinateException::class, 'latitude must be between -90 and 90, -91 given.');
 });
 
 it('validates longitude range', function (): void {
     expect(fn () => ValidatesCoordinates::assert(0.0, 181.0))
-        ->toThrow(InvalidCoordinateException::class, 'longitude must be between -180 and 180')
+        ->toThrow(InvalidCoordinateException::class, 'longitude must be between -180 and 180, 181 given.')
         ->and(fn () => ValidatesCoordinates::assert(0.0, -181.0))
-        ->toThrow(InvalidCoordinateException::class, 'longitude must be between -180 and 180');
+        ->toThrow(InvalidCoordinateException::class, 'longitude must be between -180 and 180, -181 given.');
 });
 
 it('accepts boundary coordinates', function (): void {
@@ -56,7 +56,7 @@ it('rejects empty geocoding search names', function (): void {
 
 it('rejects overly long geocoding search names', function (): void {
     expect(fn () => ValidatesGeocodingSearchName::normalize(str_repeat('a', 257)))
-        ->toThrow(InvalidGeocodingSearchException::class, 'name must not exceed 256 characters');
+        ->toThrow(InvalidGeocodingSearchException::class, 'name must not exceed 256 characters, 257 given.');
 });
 
 it('trims geocoding search names', function (): void {

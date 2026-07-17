@@ -13,13 +13,15 @@ use TempiMarathon\OpenMeteo\Exceptions\OpenMeteoRequestException;
 use TempiMarathon\OpenMeteo\Support\OpenMeteoConfig;
 use Throwable;
 
-/** @pest-mutate-ignore */
 abstract class BaseConnector extends Connector
 {
+    // @pest-mutate-ignore
     public ?int $tries = 3;
 
+    // @pest-mutate-ignore
     public ?int $retryInterval = 500;
 
+    // @pest-mutate-ignore
     public ?bool $useExponentialBackoff = true;
 
     /** @return array<string, string> */

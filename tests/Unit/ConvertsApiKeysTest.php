@@ -63,6 +63,16 @@ it('expands wind direction canonical aliases in both directions', function (): v
         ->and(ConvertsApiKeys::candidateKeys('wind_direction_10m'))->toBe(['wind_direction_10m', 'winddirection_10m']);
 });
 
+it('exposes the complete api key alias map', function (): void {
+    $aliases = (new ReflectionClass(ConvertsApiKeys::class))->getConstant('ALIASES');
+
+    expect($aliases)->toBe([
+        'weathercode' => 'weather_code',
+        'windspeed_10m' => 'wind_speed_10m',
+        'winddirection_10m' => 'wind_direction_10m',
+    ]);
+});
+
 it('returns deduplicated list keys from enums', function (): void {
     $keys = ConvertsApiKeys::candidateKeys(HourlyVariable::Temperature2m);
 

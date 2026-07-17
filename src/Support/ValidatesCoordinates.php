@@ -6,15 +6,18 @@ namespace TempiMarathon\OpenMeteo\Support;
 
 use TempiMarathon\OpenMeteo\Exceptions\InvalidCoordinateException;
 
-/** @pest-mutate-ignore */
 final class ValidatesCoordinates
 {
+    // @pest-mutate-ignore
     private const float MIN_LATITUDE = -90.0;
 
+    // @pest-mutate-ignore
     private const float MAX_LATITUDE = 90.0;
 
+    // @pest-mutate-ignore
     private const float MIN_LONGITUDE = -180.0;
 
+    // @pest-mutate-ignore
     private const float MAX_LONGITUDE = 180.0;
 
     public static function assert(float $latitude, float $longitude): void
