@@ -103,14 +103,14 @@ it('formats unexpected dto exceptions', function (): void {
 });
 
 it('accepts custom invalid argument messages', function (): void {
-    expect(new InvalidCoordinateException('latitude must be between -90 and 90, 100 given.')->getMessage())
+    expect((new InvalidCoordinateException('latitude must be between -90 and 90, 100 given.'))->getMessage())
         ->toBe('latitude must be between -90 and 90, 100 given.')
-        ->and(new InvalidGeocodingSearchException('name must not be empty.')->getMessage())
+        ->and((new InvalidGeocodingSearchException('name must not be empty.'))->getMessage())
         ->toBe('name must not be empty.')
-        ->and(new InvalidGeocodingCountException('count must be between 1 and 100, 0 given.')->getMessage())
+        ->and((new InvalidGeocodingCountException('count must be between 1 and 100, 0 given.'))->getMessage())
         ->toBe('count must be between 1 and 100, 0 given.')
-        ->and(new InvalidForecastParameterException('forecast_days must be between 0 and 16, 17 given.')->getMessage())
+        ->and((new InvalidForecastParameterException('forecast_days must be between 0 and 16, 17 given.'))->getMessage())
         ->toBe('forecast_days must be between 0 and 16, 17 given.')
-        ->and(new MissingDateRangeException('start_date and end_date are required for this endpoint.')->getMessage())
+        ->and((new MissingDateRangeException('start_date and end_date are required for this endpoint.'))->getMessage())
         ->toBe('start_date and end_date are required for this endpoint.');
 });
