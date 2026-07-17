@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  tests:
     runs-on: ubuntu-latest
 
     strategy:
@@ -65,3 +65,19 @@ jobs:
         if: matrix.php == '8.5' && matrix.testbench == '^11.0'
         run: composer test:mutation
         continue-on-error: true
+
+  # Single required status check that aggregates the matrix above, so branch
+  # protection can require "test" without listing every matrix combination.
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    needs: tests
+    if: always()
+    steps:
+      - name: Verify matrix result
+        run: |
+          if [ "${{ needs.tests.result }}" != "success" ]; then
+            echo "One or more matrix jobs failed: ${{ needs.tests.result }}"
+            exit 1
+          fi
+          echo "All matrix jobs succeeded."
