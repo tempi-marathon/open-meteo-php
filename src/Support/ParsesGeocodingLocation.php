@@ -15,7 +15,9 @@ trait ParsesGeocodingLocation
      */
     protected function parseGeocodingLocation(array $data): GeocodingLocation
     {
-        $timezone = Timezone::tryFrom(Coerce::toString($data['timezone'] ?? null)) ?? Timezone::GMT;
+        $timezone = isset($data['timezone'])
+            ? (Timezone::tryFrom(Coerce::toString($data['timezone'])) ?? Timezone::GMT)
+            : Timezone::GMT;
         $countryCode = isset($data['country_code'])
             ? CountryCode::tryFrom(Coerce::toString($data['country_code']))
             : null;
