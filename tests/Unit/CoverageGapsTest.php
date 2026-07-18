@@ -238,6 +238,28 @@ it('falls back to gmt for unknown geocoding timezones', function (): void {
     expect($request->createDtoFromResponse($response)->first()?->timezone)->toBe(Timezone::GMT);
 });
 
+it('falls back to gmt when geocoding timezone is missing or null', function (?string $timezone): void {
+    $request = new SearchRequest('Test');
+    $payload = geocodingSearchPayload();
+
+    if ($timezone === null) {
+        $payload['results'][0]['timezone'] = null;
+    } else {
+        unset($payload['results'][0]['timezone']);
+    }
+
+    $response = new Response(
+        new GuzzleHttp\Psr7\Response(200, [], json_encode($payload, JSON_THROW_ON_ERROR)),
+        new PendingRequest(new GeocodingConnector, $request),
+        (new PendingRequest(new GeocodingConnector, $request))->createPsrRequest(),
+    );
+
+    expect($request->createDtoFromResponse($response)->first()?->timezone)->toBe(Timezone::GMT);
+})->with([
+    'null timezone' => [null],
+    'missing timezone key' => ['missing'],
+]);
+
 it('parses minimal geocoding location payloads', function (): void {
     $request = new SearchRequest('Test');
     $response = new Response(
